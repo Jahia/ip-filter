@@ -2,11 +2,23 @@ package org.jahia.services.render.filter;
 
 
 import org.apache.commons.net.util.SubnetUtils;
+import org.jahia.api.Constants;
+import org.jahia.bin.ActionResult;
 import org.jahia.exceptions.JahiaForbiddenAccessException;
+import org.jahia.modules.IPFilter.webflow.model.IPRule;
+import org.jahia.services.content.JCRCallback;
 import org.jahia.services.content.JCRNodeWrapper;
+import org.jahia.services.content.JCRSessionWrapper;
+import org.jahia.services.content.JCRTemplate;
 import org.jahia.services.render.RenderContext;
 import org.jahia.services.render.Resource;
 import org.slf4j.Logger;
+import org.springframework.beans.factory.annotation.Autowired;
+
+import javax.jcr.PathNotFoundException;
+import javax.jcr.RepositoryException;
+import java.util.ArrayList;
+import java.util.List;
 
 
 /**
@@ -19,12 +31,79 @@ import org.slf4j.Logger;
 public class IPFilter extends AbstractFilter {
     private static final Logger logger = org.slf4j.LoggerFactory.getLogger(IPFilter.class);
 
+    @Autowired
+    private JCRTemplate jcrTemplate;
+
+    private List<IPRule> ipRules;
+
+    public List<IPRule> getIpRules() {
+        return ipRules;
+    }
+
+    public void setIpRules(List<IPRule> ipRules) {
+        this.ipRules = ipRules;
+    }
+
+    public void addRule(IPRule rule)
+    {
+        this.ipRules.add(rule);
+    }
+
+    public IPFilter()
+    {
+        initFilter();
+    }
+
+    public void initFilter()
+    {
+        ipRules = new ArrayList<IPRule>();
+        if(jcrTemplate!=null)
+        {
+            try
+            {
+                jcrTemplate.doExecuteWithSystemSession(null, Constants.EDIT_WORKSPACE,
+                        new JCRCallback<ActionResult>() {
+                            @Override
+                            public ActionResult doInJCR(JCRSessionWrapper session) throws RepositoryException
+                            {
+                                JCRNodeWrapper ipRulesNode;
+
+                                try
+                                {
+                                    ipRulesNode = session.getNode("/settings/ip-filters");
+                                    if(ipRulesNode.hasNodes())
+                                    {
+                                        for(JCRNodeWrapper child : ipRulesNode.getNodes())
+                                        {
+                                            ipRules.add(new IPRule(child.getProperty("jcr:uuid").getString(),child.getProperty("name").getString(), child.getProperty("description").getString(),child.getProperty("type").getString(),child.getProperty("ipFrom").getString(),child.getProperty("ipTo").getString()));
+                                        }
+                                    }
+                                }
+                                catch (PathNotFoundException e)
+                                {
+                                    logger.info("No IP Filter Rules defined");
+                                }
+                                return null;
+                            }
+                        });
+            }
+            catch(RepositoryException e)
+            {
+                logger.error("Failed to initiate the IP Filter Rules", e);
+            }
+        }
+    }
+
+    public void setJcrTemplate(JCRTemplate jcrTemplate) {
+        this.jcrTemplate = jcrTemplate;
+    }
 
     public String prepare(RenderContext renderContext, Resource resource, RenderChain chain) throws Exception {
         String currentAddress = renderContext.getRequest().getRemoteAddr();
         JCRNodeWrapper siteNode = renderContext.getSite();
         String filterType = siteNode.hasProperty("filterType") ? siteNode.getProperty("filterType").getString() : null;
-        if (filterType != null) {
+        if (filterType != null)
+        {
             logger.debug("filterType is [" + filterType + "]");
             if (currentAddress != null) {
                 String ipRangeList = siteNode.hasProperty("ipRangeList") ? siteNode.getProperty("ipRangeList").getString() : null;

@@ -2,3 +2,18 @@
 <jmix = 'http://www.jahia.org/jahia/mix/1.0'>
 
 [jnt:serverSettingsIPRestriction] > jnt:content, jmix:siteComponent, mix:title, jmix:studioOnly
+
+[jnt:ipRestrictionConfiguration]
++ * (jnt:ipRestriction) = jnt:ipRestriction
+
+[jnt:ipRestriction]
+extends=jnt:virtualsite
+itemtype=options
+  - description (string)
+  - filterType (string, choicelist[resourceBundle]) = 'deny' autocreated indexed=no < 'deny','onlyallow'
+  - ipRangeList (string) = '192.168.1.0/24,192.168.2.0/24'
+  - ipFrom (string)
+  - ipTo (string)
+  - name (string)
+  - status (boolean)
+  - type (string)

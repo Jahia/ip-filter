@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<flow xmlns="http://www.springframework.org/schema/webflow"
+      xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+      xsi:schemaLocation="
+        http://www.springframework.org/schema/webflow
+        http://www.springframework.org/schema/webflow/spring-webflow-2.0.xsd">
+
+    <var name="flowHandler" class="org.jahia.modules.IPFilter.webflow.IPRulesFlowHandler"/>
+    <var name="ipRulesModel" class="org.jahia.modules.IPFilter.webflow.model.IPRulesModel"/>
+
+    <view-state id="serverSettingsIPRestrictionPage" model="ipRulesModel">
+        <transition on="ipRulesCreateRules">
+            <evaluate expression="flowHandler.createRules(ipRulesModel, externalContext.requestMap.renderContext)"/>
+        </transition>
+        <transition on="ipRulesUpdate">
+            <evaluate expression="flowHandler.updateRules(ipRulesModel, externalContext.requestMap.renderContext)"/>
+        </transition>
+    </view-state>
+    <global-transitions>
+        <transition on="ipRulesCancel" to="serverSettingsIPRestrictionPage" bind="false" validate="false">
+            <evaluate expression="flowHandler.initIPRules()" result="flowScope.ipRulesModel"/>
+        </transition>
+    </global-transitions>
+</flow>
