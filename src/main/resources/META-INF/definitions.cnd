@@ -5,15 +5,15 @@
 
 [jnt:ipRestrictionConfiguration]
 + * (jnt:ipRestriction) = jnt:ipRestriction
+- j:filterPhilosophy (string)
 
 [jnt:ipRestriction]
 extends=jnt:virtualsite
 itemtype=options
-  - description (string)
+  - j:description (string)
+  - j:ipMask (string)
+  - j:name (string)
+  - j:status (boolean)
+  - j:type (string, choicelist[resourceBundle]) = 'deny' autocreated indexed=no < 'deny','onlyallow'
   - filterType (string, choicelist[resourceBundle]) = 'deny' autocreated indexed=no < 'deny','onlyallow'
   - ipRangeList (string) = '192.168.1.0/24,192.168.2.0/24'
-  - ipFrom (string)
-  - ipTo (string)
-  - name (string)
-  - status (boolean)
-  - type (string)

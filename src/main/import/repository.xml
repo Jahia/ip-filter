@@ -40,7 +40,7 @@
                                             jcr:mixinTypes="jmix:rbTitle"
                                             jcr:primaryType="jnt:contentTemplate">
                             <pagecontent jcr:primaryType="jnt:contentList">
-                                <!--<ip-filter jcr:primaryType="jnt:serverSettingsIPRestriction"/>-->
+                                <ip-filter jcr:primaryType="jnt:serverSettingsIPRestriction"/>
                             </pagecontent>
                         </ip-filter>
                     </configurations>

@@ -9,12 +9,20 @@
     <var name="ipRulesModel" class="org.jahia.modules.IPFilter.webflow.model.IPRulesModel"/>
 
     <view-state id="serverSettingsIPRestrictionPage" model="ipRulesModel">
+        <on-entry>
+            <evaluate expression="flowHandler.initIPRules()" result="flowScope.ipRulesModel"/>
+        </on-entry>
+
         <transition on="ipRulesCreateRules">
-            <evaluate expression="flowHandler.createRules(ipRulesModel, externalContext.requestMap.renderContext)"/>
+            <evaluate expression="flowHandler.createRules(ipRulesModel, externalContext.requestMap.renderContext)" result="flowScope.ipRulesModel"/>
         </transition>
-        <transition on="ipRulesUpdate">
-            <evaluate expression="flowHandler.updateRules(ipRulesModel, externalContext.requestMap.renderContext)"/>
+        <transition on="ipRulesUpdateRules">
+            <evaluate expression="flowHandler.updateRules(ipRulesModel, externalContext.requestMap.renderContext)" result="flowScope.ipRulesModel"/>
         </transition>
+        <transition on="ipRulesDeleteRules" validate="false">
+            <evaluate expression="flowHandler.deleteRules(ipRulesModel, externalContext.requestMap.renderContext)" result="flowScope.ipRulesModel"/>
+        </transition>
+        <transition on="ipRulesSelectSite" validate="false"/>
     </view-state>
     <global-transitions>
         <transition on="ipRulesCancel" to="serverSettingsIPRestrictionPage" bind="false" validate="false">
