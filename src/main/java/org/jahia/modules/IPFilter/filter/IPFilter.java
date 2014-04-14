@@ -41,7 +41,7 @@ public class IPFilter extends AbstractFilter implements InitializingBean {
 
     private Map<String,List<IPRule>> rules;
 
-    private String filteringRule;
+    private String filteringRule="";
 
     public void setJcrTemplate(JCRTemplate jcrTemplate) {
         this.jcrTemplate = jcrTemplate;

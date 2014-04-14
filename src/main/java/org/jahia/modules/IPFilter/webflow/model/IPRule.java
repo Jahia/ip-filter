@@ -7,8 +7,6 @@ import java.io.Serializable;
  */
 public class IPRule implements Serializable
 {
-    public final static String IPTYPE_RANGE="range";
-    public final static String IPTYPE_PATTERN="pattern";
     private static final long serialVersionUID = -558162577353590216L;
     private String description;
     private String id;
