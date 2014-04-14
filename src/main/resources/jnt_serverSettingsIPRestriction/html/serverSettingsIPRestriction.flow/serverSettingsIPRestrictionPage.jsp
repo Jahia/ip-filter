@@ -71,7 +71,7 @@
                         <form:label class="control-label" path="toBeCreated.name"><fmt:message key="ipFilter.form.name"/> : </form:label>
                         <div class="controls">
                             <form:input path="toBeCreated.name"/>
-                            <div class="text-danger">
+                            <div class="text-error">
                                 <form:errors path="toBeCreated.name"/>
                             </div>
                         </div>
@@ -91,7 +91,7 @@
                                     <form:option value="${site.name}"> ${site.displayableName}</form:option>
                                 </c:forEach>
                             </form:select>
-                            <div class="text-danger">
+                            <div class="text-error">
                                 <form:errors path="toBeCreated.siteName"/>
                             </div>
                         </div>
@@ -105,7 +105,7 @@
                             </select>
                             <input type="text" name="displayType"  class="hide" disabled="disabled"/>
                             <form:hidden path="toBeCreated.type" value="onlyallow"/>
-                            <div class="text-danger">
+                            <div class="text-error">
                                 <form:errors path="toBeCreated.type"/>
                             </div>
                         </div>
@@ -114,7 +114,7 @@
                         <form:label class="control-label" path="toBeCreated.ipMask"><fmt:message key="ipFilter.form.ipMask"/> : </form:label>
                         <div class="controls">
                             <form:input path="toBeCreated.ipMask" cssClass="ipMask"/>
-                            <div class="text-danger">
+                            <div class="text-error">
                                 <form:errors path="toBeCreated.ipMask"/>
                             </div>
                         </div>
@@ -206,7 +206,7 @@
                                                                  <span class="text-success"><strong><fmt:message key="ipFilter.form.active"/></strong></span>&nbsp;
                                                              </c:when>
                                                              <c:otherwise>
-                                                                 <span class="text-danger"><fmt:message key="ipFilter.form.inactive"/></span>&nbsp;
+                                                                 <span class="text-error"><fmt:message key="ipFilter.form.inactive"/></span>&nbsp;
                                                              </c:otherwise>
                                                          </c:choose>
                                                      </div>
