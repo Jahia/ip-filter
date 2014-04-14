@@ -35,7 +35,7 @@
                                             j:defaultTemplate="false"
                                             j:hiddenTemplate="false"
                                             j:icon="/modules/ip-filter/templates/files/checkbox.png"
-                                            j:requiredPermissionNames="adminEmailSettings"
+                                            j:requiredPermissionNames="adminIpFilterSettings"
                                             j:titleKey="jmix_ipRestriction.title"
                                             jcr:mixinTypes="jmix:rbTitle"
                                             jcr:primaryType="jnt:contentTemplate">
