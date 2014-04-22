@@ -59,10 +59,10 @@
 </template:addResources>
 
 <c:set var="ipRuleList" value="${ipRulesModel.ipRuleList}"/>
-<h3><fmt:message key="ipFilter.title"/></h3>
 <jcr:node path="/sites" var="sitesVar" />
-<h5>Rules creation</h5>
 <div class="container">
+    <h3 class="text-center"><fmt:message key="ipFilter.title"/></h3>
+    <h5>Rules creation</h5>
     <div class="row-fluid">
         <div class="alert alert-info">
             <div class="span6">
