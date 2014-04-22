@@ -19,10 +19,7 @@ import org.springframework.beans.factory.InitializingBean;
 
 import javax.jcr.PathNotFoundException;
 import javax.jcr.RepositoryException;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 
 /**
@@ -147,86 +144,75 @@ public class IPFilter extends AbstractFilter implements InitializingBean {
         boolean filterNeeded=false;
         String currentAddress = renderContext.getRequest().getRemoteAddr();
         JCRNodeWrapper siteNode = renderContext.getSite();
-        List<IPRule> rulesToApply=null;
+        Map<String,List<IPRule>> rulesToApply=new HashMap<String, List<IPRule>>();
+        SiteNameComparator snc =  new SiteNameComparator(rulesToApply);
+        if(rules.containsKey("all"))
+        {
+            rulesToApply.put("all",rules.get("all"));
+        }
         if(rules.containsKey(siteNode.getName()))
         {
-            rulesToApply = rules.get(siteNode.getName());
-            if(sitesPhilosophy.containsKey("all") && sitesPhilosophy.get("all").equals(sitesPhilosophy.get(siteNode.getName())))
-            {
-                rulesToApply.addAll(rules.get("all"));
-            }
+            rulesToApply.put(siteNode.getName(),rules.get(siteNode.getName()));
         }
-        else
+        TreeMap<String,List<IPRule>> sorted_rules_map = new TreeMap<String,List<IPRule>>(snc);
+        sorted_rules_map.putAll(rulesToApply);
+        for(Map.Entry<String, List<IPRule>> entry : sorted_rules_map.entrySet())
         {
-            if(sitesPhilosophy.containsKey("all"))
-            {
-                rulesToApply=rules.get("all");
-            }
-        }
-        String filterType = null;
-        if(sitesPhilosophy.containsKey(siteNode.getName()))
-        {
-            filterType = sitesPhilosophy.get(siteNode.getName());
-        }
-        else
-        {
-            if(sitesPhilosophy.containsKey("all"))
-            {
-                filterType =sitesPhilosophy.get("all");
-            }
-        }
+            String filterType = sitesPhilosophy.get(entry.getKey());
 
-        logger.debug("- IPFilter - prepare - Site : " + siteNode.getName());
-        logger.debug("- IPFilter - prepare - current Address : " + currentAddress);
-        logger.debug("- IPFilter - prepare - rules size : " + rules.size());
-        logger.debug("- IPFilter - prepare - site philosophy : " + sitesPhilosophy.get(siteNode.getName()));
-        logger.debug("- IPFilter - prepare - filter Type : " + filterType);
-        if (filterType != null && rulesToApply!=null)
-        {
-            logger.debug("filterType is [" + filterType + "]");
-            if (currentAddress != null)
+            logger.debug("- IPFilter - prepare - Site : " + siteNode.getName());
+            logger.debug("- IPFilter - prepare - current Address : " + currentAddress);
+            logger.debug("- IPFilter - prepare - rules size : " + rules.size());
+            logger.debug("- IPFilter - prepare - site philosophy : " + sitesPhilosophy.get(siteNode.getName()));
+            logger.debug("- IPFilter - prepare - filter Type : " + filterType);
+            if (filterType != null && sorted_rules_map!=null && !renderContext.getUser().isRoot())
             {
-                if ("deny".equals(filterType))
+                logger.debug("filterType is [" + filterType + "]");
+                if (currentAddress != null)
                 {
-                    for(IPRule currentRule : rulesToApply)
+                    if ("deny".equals(filterType))
                     {
+                        for(IPRule currentRule : entry.getValue())
+                        {
 
-                        if(currentRule.isStatus())
+                            if(currentRule.isStatus())
+                            {
+                                filteringRule+=currentRule.getIpMask();
+                                inRange = inRange || isInRange(currentAddress, currentRule,siteNode.getName());
+                                filterNeeded=true;
+                            }
+                        }
+                        if(filterNeeded)
                         {
-                            filteringRule+=currentRule.getIpMask();
-                            inRange = inRange || isInRange(currentAddress, currentRule,siteNode.getName());
-                            filterNeeded=true;
+                            if (inRange)
+                            {
+                                logger.warn("IPFilter - prepare - Deny rule: IP [" + currentAddress + "] is in subnet [" + filteringRule + "]");
+                                throw new JahiaForbiddenAccessException();
+                            }
                         }
                     }
-                    if(filterNeeded)
-                    {
-                        if (inRange)
+                    else
+                    {// onlyallow
+                        for(IPRule currentRule : entry.getValue())
                         {
-                            logger.warn("IPFilter - prepare - Deny rule: IP [" + currentAddress + "] is in subnet [" + filteringRule + "]");
-                            throw new JahiaForbiddenAccessException();
+                            if(currentRule.isStatus())
+                            {
+                                filteringRule+=currentRule.getIpMask();
+                                inRange = inRange || isInRange(currentAddress, currentRule,siteNode.getName());
+                                filterNeeded=true;
+                            }
                         }
-                    }
-                }
-                else
-                {// onlyallow
-                    for(IPRule currentRule : rulesToApply)
-                    {
-                        if(currentRule.isStatus())
+                        if(filterNeeded)
                         {
-                            filteringRule+=currentRule.getIpMask();
-                            inRange = inRange || isInRange(currentAddress, currentRule,siteNode.getName());
-                            filterNeeded=true;
-                        }
-                    }
-                    if(filterNeeded)
-                    {
-                        if (!inRange) {
-                            logger.warn("IPFilter - prepare - Only Allow rule:  IP [" + currentAddress + "] not in subnet [" + filteringRule + "]");
-                            throw new JahiaForbiddenAccessException();
+                            if (!inRange) {
+                                logger.warn("IPFilter - prepare - Only Allow rule:  IP [" + currentAddress + "] not in subnet [" + filteringRule + "]");
+                                throw new JahiaForbiddenAccessException();
+                            }
                         }
                     }
                 }
             }
+            inRange=false;
         }
         return null;
     }

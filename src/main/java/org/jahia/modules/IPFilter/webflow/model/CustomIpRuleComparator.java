@@ -24,7 +24,26 @@ public class CustomIpRuleComparator implements Comparator<IPRule>
         }
         else
         {
-            return (ipRule1.getSiteName()+ipRule1.getName()).compareTo(ipRule2.getSiteName()+ipRule2.getName());
+            if(ipRule1.getSiteName().equals("all"))
+            {
+                if(ipRule2.getSiteName().equals("all"))
+                {
+                    return (ipRule1.getSiteName()+ipRule1.getName()).compareToIgnoreCase(ipRule2.getSiteName()+ipRule2.getName());
+                }
+                else
+                {
+                    return -1;
+                }
+            }
+            else
+            {
+                if(ipRule2.getSiteName().equals("all"))
+                {
+                    return 1;
+                }
+                return (ipRule1.getSiteName()+ipRule1.getName()).compareToIgnoreCase(ipRule2.getSiteName()+ipRule2.getName());
+            }
+
         }
     }
 }
