@@ -61,9 +61,9 @@
 <c:set var="ipRuleList" value="${ipRulesModel.ipRuleList}"/>
 <h3><fmt:message key="ipFilter.title"/></h3>
 <jcr:node path="/sites" var="sitesVar" />
+<h5>Rules creation</h5>
 <div class="container">
     <div class="row-fluid">
-        <h5>Rules creation</h5>
         <div class="alert alert-info">
             <div class="span6">
                 <form:form name="updateRules" class="createRulesForm form-horizontal" action="${flowExecutionUrl}" method="post" modelAttribute="ipRulesModel">
@@ -133,24 +133,31 @@
                     </div>
                 </form:form>
             </div>
-            <div class="span6" style="text-align:justify">
-                <h5><fmt:message key="ipFilter.help.title"/></h5>
-                <p>
-                    <div><fmt:message key="ipFilter.help.ipFilterMaskHelp"/></div>
-                </p>
-                <p>
-                    <div><fmt:message key="ipFilter.help.ipFilterMaskHelp2"/></div>
-                    <div><fmt:message key="ipFilter.help.ipFilterMaskHelp3"/></div>
-                    <div style="margin-top:5px;">&nbsp;<strong><fmt:message key="ipFilter.help.ipFilterMaskHelp4"/></strong></div>
-                </p>
-                <p>
-                    <div><fmt:message key="ipFilter.help.ipFilterMaskHelp5"/></div>
-                    <div><fmt:message key="ipFilter.help.ipFilterMaskHelp6"/></div>
-                </p>
-                <div><fmt:message key="ipFilter.help.ipFilterMaskHelp7"/></div>
+            <div class="span1"></div>
+            <div class="span5" style="text-align:justify">
+                <dl>
+                    <dt class="text-center"><fmt:message key="ipFilter.help.title"/></dt>
+                    <dd>
+
+                        <p>
+                            <div><fmt:message key="ipFilter.help.ipFilterMaskHelp"/></div>
+                        </p>
+                        <p>
+                            <div><fmt:message key="ipFilter.help.ipFilterMaskHelp2"/></div>
+                            <div><fmt:message key="ipFilter.help.ipFilterMaskHelp3"/></div>
+                            <div style="margin-top:5px;">&nbsp;<strong><fmt:message key="ipFilter.help.ipFilterMaskHelp4"/></strong></div>
+                        </p>
+                        <p>
+                            <div><fmt:message key="ipFilter.help.ipFilterMaskHelp5"/></div>
+                            <div><fmt:message key="ipFilter.help.ipFilterMaskHelp6"/></div>
+                        </p>
+                        <div><fmt:message key="ipFilter.help.ipFilterMaskHelp7"/></div>
+                    </dd>
+                </dl>
             </div>
             <div class="clearfix"></div>
          </div>
+        <div class="clearfix"></div>
     </div>
 </div>
 <div class="container">
