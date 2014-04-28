@@ -13,7 +13,6 @@ itemtype=options
   - j:description (string)
   - j:ipMask (string)
   - j:name (string)
-  - j:status (boolean)
+  - j:active (boolean)
   - j:type (string, choicelist[resourceBundle]) = 'deny' autocreated indexed=no < 'deny','onlyallow'
-  - filterType (string, choicelist[resourceBundle]) = 'deny' autocreated indexed=no < 'deny','onlyallow'
   - ipRangeList (string) = '192.168.1.0/24,192.168.2.0/24'

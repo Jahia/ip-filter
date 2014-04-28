@@ -1,13 +1,12 @@
 package org.jahia.modules.IPFilter.webflow;
 
 import java.io.Serializable;
-import java.util.Collection;
 import java.util.Collections;
 
 import org.jahia.api.Constants;
 import org.jahia.bin.ActionResult;
 import org.jahia.modules.IPFilter.webflow.model.CustomIpRuleComparator;
-import org.jahia.modules.IPFilter.webflow.model.IPRule;
+import org.jahia.modules.IPFilter.IPRule;
 import org.jahia.modules.IPFilter.webflow.model.IPRulesModel;
 import org.jahia.services.content.JCRCallback;
 import org.jahia.services.content.JCRNodeWrapper;
@@ -34,8 +33,6 @@ public class IPRulesFlowHandler implements Serializable
     @Autowired
     private transient JCRTemplate jcrTemplate;
 
-
-
     @Autowired
     private transient IPFilter filter;
 
@@ -43,11 +40,18 @@ public class IPRulesFlowHandler implements Serializable
         this.jcrTemplate = jcrTemplate;
     }
 
-
-    public IPRulesModel createRules(IPRulesModel model, RenderContext renderContext)
+    /**
+     * This methode handle the rule creation. It creates JCR nodes corresponding to the rule under the path /settings/ip-filters/<model.siteName>
+     * @author Rahmed
+     * @param model The webflow model object containing the rule to create data
+     * @return IPRulesModel : the ipRuleModel cleared to reset the form in the Jsp after the node creation
+     */
+    public IPRulesModel createRules(IPRulesModel model)
     {
-
-        logger.debug("IPRulesFlowHandler - createRules - Start");
+        if(logger.isDebugEnabled()){
+            logger.debug("IPRulesFlowHandler - createRules - Start");
+        }
+        //Check the model rule validity
         if(!model.getToBeCreated().getName().isEmpty() && !model.getToBeCreated().getIpMask().isEmpty() && !model.getToBeCreated().getSiteName().isEmpty() && !model.getToBeCreated().getType().isEmpty())
         {
             final String description = model.getToBeCreated().getDescription();
@@ -70,6 +74,7 @@ public class IPRulesFlowHandler implements Serializable
                                 }
                                 catch (PathNotFoundException e)
                                 {
+                                    //rule folder has to be created
                                     if (session.nodeExists("/settings/ip-filters"))
                                     {
                                         ipRulesNode = session.getNode("/settings/ip-filters").addNode(siteName,"jnt:ipRestrictionConfiguration");
@@ -97,53 +102,59 @@ public class IPRulesFlowHandler implements Serializable
                                 if(type.equals(ipRulesNode.getProperty("j:filterPhilosophy").getString()))
                                 {
                                     try
-                                    {
+                                    {//Node can be created
                                         createdNode = ipRulesNode.addNode(name,"jnt:ipRestriction");
                                         ipRulesNode.getNode(name).setProperty("j:description", description);
                                         ipRulesNode.getNode(name).setProperty("j:ipMask", ipMask);
                                         ipRulesNode.getNode(name).setProperty("j:name", name);
                                         ipRulesNode.getNode(name).setProperty("j:type", type);
-                                        ipRulesNode.getNode(name).setProperty("j:status", true);
+                                        ipRulesNode.getNode(name).setProperty("j:active", true);
                                     }
                                     catch(ItemExistsException e)
                                     {
-                                        logger.info("IPRulesFlowHandler - createRules - Item Already Exists !!!",e);
+                                        logger.error("createRules - Item Already Exists", e);
                                     }
                                 }
                                 session.save();
-
                                 if(createdNode != null)
                                 {
-                                    filter.putRule(siteName, new IPRule(description, createdNode.getIdentifier(), ipMask, name, siteName, true, type));
+                                    //Reloading the filter
+                                    filter.initFilter();
                                 }
                                 return null;
                             }
                         });
-
-                logger.debug("IPRulesFlowHandler - createRules - Rule Created - Filter Size : " + filter.getRules().size());
-
             }
             catch (RepositoryException e)
             {
                 logger.error("IPRulesFlowHandler - createRules - Failed to create IP Filter Rule Node", e);
             }
         }
-        logger.debug("IPRulesFlowHandler - createRules - End");
-
+        if(logger.isDebugEnabled()){
+            logger.debug("IPRulesFlowHandler - createRules - End");
+        }
+        //Resetting the form in the jsp if the node has been created
         model=initIPRules();
         return model;
-
     }
 
-    public IPRulesModel updateRules(IPRulesModel model, RenderContext renderContext)
+    /**
+     * This methode updates a Rule in JCR and reload the filter.
+     * @param model the model containing the data on the rule to update
+     * @return IPRulesModel : The model containing the updated list of rule sorted as expected
+     */
+    public IPRulesModel updateRules(IPRulesModel model) throws RepositoryException
     {
-
-        logger.info("IPRulesFlowHandler - updateRules - Start");
+        if(logger.isDebugEnabled()){
+            logger.debug("IPRulesFlowHandler - updateRules - Start");
+        }
         try
         {
-
             final IPRule ipRule=model.getToBeUpdated();
-            logger.info("Update Index : "+model.getRuleIndex());
+            if(logger.isDebugEnabled()){
+                logger.debug("Update Index : "+model.getRuleIndex());
+            }
+            //Update Rule node in JCR
             jcrTemplate.doExecuteWithSystemSession(null, Constants.EDIT_WORKSPACE,
                     new JCRCallback<ActionResult>()
                     {
@@ -154,28 +165,40 @@ public class IPRulesFlowHandler implements Serializable
                             ipRuleNode.setProperty("j:name",ipRule.getName());
                             ipRuleNode.setProperty("j:description",ipRule.getDescription());
                             ipRuleNode.setProperty("j:ipMask",ipRule.getIpMask());
-                            ipRuleNode.setProperty("j:status",ipRule.isStatus());
-                            logger.debug("IPRulesFlowHandler - updateRules - Updating the IPRule node : " + ipRule.getId());
+                            ipRuleNode.setProperty("j:active",ipRule.isActive());
+                            if(logger.isDebugEnabled()){
+                                logger.debug("IPRulesFlowHandler - updateRules - Updating the IPRule node : " + ipRule.getId());
+                            }
                             session.save();
-                            filter.putRule(ipRule.getSiteName(), ipRule);
+                            //Reload the filter after JCR Update
+                            filter.initFilter();
                             return null;
                         }
                     });
-        }
-        catch (RepositoryException e)
-        {
+        }catch (RepositoryException e){
             logger.error("IPRulesFlowHandler - updateRules - Failed to Update IP Filter Rule Node", e);
+            throw new RepositoryException();
         }
-        logger.info("IPRulesFlowHandler - updateRules - End");
+        if(logger.isDebugEnabled()){
+            logger.debug("IPRulesFlowHandler - updateRules - End");
+        }
         Collections.sort(model.getIpRuleList(), new CustomIpRuleComparator());
         return model;
     }
 
-    public IPRulesModel deleteRules(IPRulesModel model, RenderContext renderContext)
+    /**
+     * This methode delete an IP Filtering rule in JCR
+     * @param model the model containing the data on the rule to delete
+     * @return IPRulesModel : the model on which the rule has been deleted
+     */
+    public IPRulesModel deleteRules(IPRulesModel model) throws RepositoryException
     {
-        logger.debug("IPRulesFlowHandler - deleteRules - Start");
+        if(logger.isDebugEnabled()){
+            logger.debug("IPRulesFlowHandler - deleteRules - Start");
+        }
 
         final IPRule ipRuletoRemove=model.getIpRuleList().get(model.getRuleIndex());
+        //Delete JCR Node
         try
         {
             jcrTemplate.doExecuteWithSystemSession(null, Constants.EDIT_WORKSPACE,
@@ -185,14 +208,17 @@ public class IPRulesFlowHandler implements Serializable
                         {
                             JCRNodeWrapper ipRuleNode = session.getNodeByIdentifier(ipRuletoRemove.getId());
                             JCRNodeWrapper siteFolder = ipRuleNode.getParent();
-                            logger.debug("IPRulesFlowHandler - deleteRules - Deleting the IPRule node : " + ipRuletoRemove.getId());
+                            if(logger.isDebugEnabled()){
+                                logger.debug("IPRulesFlowHandler - deleteRules - Deleting the IPRule node : " + ipRuletoRemove.getId());
+                            }
                             ipRuleNode.remove();
                             if(siteFolder.getNodes().getSize() == 0)
                             {
                                 siteFolder.remove();
                             }
                             session.save();
-                            filter.deleteRule(ipRuletoRemove.getSiteName(), ipRuletoRemove);
+                            //Reload the filter
+                            filter.initFilter();
                             return null;
                         }
                     });
@@ -200,17 +226,26 @@ public class IPRulesFlowHandler implements Serializable
         catch (RepositoryException e)
         {
             logger.error("IPRulesFlowHandler - deleteRules - Failed to create IP Filter Rule Node", e);
+            throw new RepositoryException();
         }
-        logger.debug("IPRulesFlowHandler - deleteRules - Delete Function End");
+        if(logger.isDebugEnabled()){
+            logger.debug("IPRulesFlowHandler - deleteRules - Delete Function End");
+        }
         model.removeRule(ipRuletoRemove);
         model.setUpdatePhase(false);
         model.setCreationPhase(false);
         return model;
     }
 
+    /**
+     * This methode initialize the Webflow model with the Ip Rules JCR nodes
+     * @return IPRuleModel : the initialized model
+     */
     public IPRulesModel initIPRules()
     {
+        if(logger.isDebugEnabled()){
         logger.debug("IPRulesFlowHandler - initIPRules - Start");
+        }
 
         //Init the sites filter philosophy constraints
         try
@@ -229,7 +264,7 @@ public class IPRulesFlowHandler implements Serializable
                                 filterSitesNode = session.getNode("/settings/ip-filters/");
                             }
                             catch (PathNotFoundException e)
-                            {
+                            {//Folders has to be created
                                 if (session.nodeExists("/settings"))
                                 {
                                     filterSitesNode = session.getNode("/settings").addNode("ip-filters","jnt:globalSettings");
@@ -248,15 +283,15 @@ public class IPRulesFlowHandler implements Serializable
                                 }
                                 for(JCRNodeWrapper filter : filterFolder.getNodes())
                                 {
-                                   /* filter.remove();
-                                    session.save();*/
-                                    ipRulesModel.addRule(new IPRule(filter.getProperty("j:description").getString(), filter.getIdentifier(), filter.getProperty("j:ipMask").getString(), filter.getProperty("j:name").getString(), filterFolder.getName(), filter.getProperty("j:status").getBoolean(), filter.getProperty("j:type").getString()));
+                                    ipRulesModel.addRule(new IPRule(filter.getProperty("j:description").getString(), filter.getIdentifier(), filter.getProperty("j:ipMask").getString(), filter.getProperty("j:name").getString(), filterFolder.getName(), filter.getProperty("j:active").getBoolean(), filter.getProperty("j:type").getString()));
                                     Collections.sort(ipRulesModel.getIpRuleList(), new CustomIpRuleComparator());
                                 }
                                 session.save();
 
                             }
-                            logger.debug("IPRulesFlowHandler - initIPRules - End");
+                            if(logger.isDebugEnabled()){
+                                logger.debug("IPRulesFlowHandler - initIPRules - End");
+                            }
                             return ipRulesModel;
                         }
                     });

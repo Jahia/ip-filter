@@ -1,9 +1,10 @@
-package org.jahia.modules.IPFilter.webflow.model;
+package org.jahia.modules.IPFilter;
 
 import java.io.Serializable;
 
 /**
  * Created by rizak on 08/04/14.
+ * This class defines the object IP Rule with all its methodes and properties
  */
 public class IPRule implements Serializable
 {
@@ -14,13 +15,29 @@ public class IPRule implements Serializable
     private String name;
     private String siteName;
     private String type;
-    private boolean status;
+    private boolean active;
 
+    /**
+     * This function override the IPRule Object comparaison to order IP Rules by name/sitename
+     * It is used in by the list of IPRules in the Module view
+     * @param rule : The other IP rule with which compare this object
+     * @return
+     */
     public int compareTo(IPRule rule) {
         return (name + siteName).compareTo(rule.getName() + rule.getSiteName());
     }
 
-    public IPRule(String description, String id, String ipMask, String name, String siteName, boolean status, String type )
+    /**
+     * IP Rule full constructor
+     * @param description
+     * @param id
+     * @param ipMask
+     * @param name
+     * @param siteName
+     * @param active
+     * @param type
+     */
+    public IPRule(String description, String id, String ipMask, String name, String siteName, boolean active, String type )
     {
         this.description=description;
         this.id=id;
@@ -28,9 +45,12 @@ public class IPRule implements Serializable
         this.name=name;
         this.siteName=siteName;
         this.type=type;
-        this.status=status;
+        this.active=active;
     }
 
+    /**
+     * IP Rule empty constructor
+     */
     public IPRule()
     {
         this.description="";
@@ -39,7 +59,7 @@ public class IPRule implements Serializable
         this.name="";
         this.siteName="";
         this.type="";
-        this.status=true;
+        this.active=true;
     }
 
     public String getDescription() {
@@ -62,8 +82,8 @@ public class IPRule implements Serializable
         return siteName;
     }
 
-    public boolean isStatus() {
-        return status;
+    public boolean isActive() {
+        return active;
     }
 
     public String getType() {
@@ -90,8 +110,8 @@ public class IPRule implements Serializable
         this.siteName = siteName;
     }
 
-    public void setStatus(boolean status) {
-        this.status = status;
+    public void setActive(boolean status) {
+        this.active = status;
     }
 
     public void setType(String type) {

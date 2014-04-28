@@ -138,19 +138,12 @@
                 <dl>
                     <dt class="text-center"><fmt:message key="ipFilter.help.title"/></dt>
                     <dd>
-
-                        <p>
                             <div><fmt:message key="ipFilter.help.ipFilterMaskHelp"/></div>
-                        </p>
-                        <p>
                             <div><fmt:message key="ipFilter.help.ipFilterMaskHelp2"/></div>
                             <div><fmt:message key="ipFilter.help.ipFilterMaskHelp3"/></div>
                             <div style="margin-top:5px;">&nbsp;<strong><fmt:message key="ipFilter.help.ipFilterMaskHelp4"/></strong></div>
-                        </p>
-                        <p>
                             <div><fmt:message key="ipFilter.help.ipFilterMaskHelp5"/></div>
                             <div><fmt:message key="ipFilter.help.ipFilterMaskHelp6"/></div>
-                        </p>
                         <div><fmt:message key="ipFilter.help.ipFilterMaskHelp7"/></div>
                     </dd>
                 </dl>

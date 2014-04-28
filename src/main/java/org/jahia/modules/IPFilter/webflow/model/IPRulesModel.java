@@ -2,19 +2,21 @@ package org.jahia.modules.IPFilter.webflow.model;
 
 
 import org.apache.commons.lang.StringUtils;
+import org.jahia.modules.IPFilter.IPRule;
 import org.jahia.utils.i18n.Messages;
 import org.springframework.binding.message.MessageBuilder;
 import org.springframework.binding.message.MessageContext;
+import org.springframework.binding.message.MessageResolver;
 import org.springframework.binding.validation.ValidationContext;
 import org.springframework.context.i18n.LocaleContextHolder;
-import org.springframework.webflow.execution.RequestContext;
-import org.springframework.webflow.execution.RequestContextHolder;
 
-import javax.servlet.http.HttpServletRequest;
 import java.io.Serializable;
 import java.util.*;
 
 /**
+ * This class defines the IPRule Model for the module webflow view.
+ * it contains also the IP Rule creation and edit forms validation.
+ *
  * Created by rizak on 08/04/14.
  */
 public class IPRulesModel implements Serializable
@@ -142,8 +144,19 @@ public class IPRulesModel implements Serializable
         this.updatePhase = updatePhase;
     }
 
-    public boolean validateServerSettingsIPRestrictionPage(ValidationContext context) {
+    private MessageResolver getMessage(String source, String bundleKey)
+    {
         Locale locale = LocaleContextHolder.getLocale();
+        return new MessageBuilder().error().source(source).defaultText(Messages.get(BUNDLE, bundleKey, locale)).build();
+    }
+
+    /**
+     * This methode validate data in the IPRulesModel object
+     * @param context the context is used for getting and updating messageContext
+     * @return boolean the validation result
+     */
+    public boolean validateServerSettingsIPRestrictionPage(ValidationContext context) {
+
         MessageContext messages = context.getMessageContext();
         boolean valid = true;
 
@@ -152,37 +165,37 @@ public class IPRulesModel implements Serializable
         {
             if (StringUtils.isBlank(toBeCreated.getName()))
             {
-                messages.addMessage(new MessageBuilder().error().source("toBeCreated.name").defaultText(Messages.get(BUNDLE, "ipFilter.form.error.name.empty", locale)).build());
+                messages.addMessage(getMessage("toBeCreated.name","ipFilter.form.error.name.empty"));
                 valid = false;
             }
 
             if (!StringUtils.isBlank(toBeCreated.getName()) && !validateRuleName(toBeCreated.getName(),toBeCreated.getSiteName()))
             {
-                messages.addMessage(new MessageBuilder().error().source("toBeCreated.name").defaultText(Messages.get(BUNDLE, "ipFilter.form.error.name.alreadyExist", locale)).build());
+                messages.addMessage(getMessage("toBeCreated.name", "ipFilter.form.error.name.alreadyExist"));
                 valid = false;
             }
 
             if (StringUtils.isBlank(toBeCreated.getIpMask()))
             {
-                messages.addMessage(new MessageBuilder().error().source("toBeCreated.ipMask").defaultText(Messages.get(BUNDLE, "ipFilter.form.error.ipMask.empty", locale)).build());
+                messages.addMessage(getMessage("toBeCreated.ipMask","ipFilter.form.error.ipMask.empty"));
                 valid = false;
             }
 
             if (!StringUtils.isBlank(toBeCreated.getIpMask()) && !validateRuleMask(toBeCreated.getIpMask(),toBeCreated.getSiteName()))
             {
-                messages.addMessage(new MessageBuilder().error().source("toBeCreated.ipMask").defaultText(Messages.get(BUNDLE, "ipFilter.form.error.ipMask.alreadyExists", locale)).build());
+                messages.addMessage(getMessage("toBeCreated.ipMask", "ipFilter.form.error.ipMask.alreadyExists"));
                 valid = false;
             }
 
             if (StringUtils.isBlank(toBeCreated.getSiteName()))
             {
-                messages.addMessage(new MessageBuilder().error().source("toBeCreated.siteName").defaultText(Messages.get(BUNDLE, "ipFilter.form.error.siteName.empty", locale)).build());
+                messages.addMessage(getMessage("toBeCreated.siteName","ipFilter.form.error.siteName.empty"));
                 valid = false;
             }
 
             if (StringUtils.isBlank(toBeCreated.getType()))
             {
-                messages.addMessage(new MessageBuilder().error().source("toBeCreated.type").defaultText(Messages.get(BUNDLE, "ipFilter.form.error.type.empty", locale)).build());
+                messages.addMessage(getMessage("toBeCreated.type", "ipFilter.form.error.type.empty"));
                 valid = false;
             }
         }
@@ -194,25 +207,25 @@ public class IPRulesModel implements Serializable
 
             if (StringUtils.isBlank(toBeUpdated.getName()))
             {
-                messages.addMessage(new MessageBuilder().error().source("toBeUpdated.name").defaultText(Messages.get(BUNDLE, "ipFilter.form.error.name.empty", locale)).build());
+                messages.addMessage(getMessage("toBeUpdated.name", "ipFilter.form.error.name.empty"));
                 valid = false;
             }
 
             if (StringUtils.isBlank(toBeUpdated.getIpMask()))
             {
-                messages.addMessage(new MessageBuilder().error().source("toBeUpdated.ipMask").defaultText(Messages.get(BUNDLE, "ipFilter.form.error.ipMask.empty", locale)).build());
+                messages.addMessage(getMessage("toBeUpdated.ipMask", "ipFilter.form.error.ipMask.empty"));
                 valid = false;
             }
 
             if (StringUtils.isBlank(toBeUpdated.getSiteName()))
             {
-                messages.addMessage(new MessageBuilder().error().source("toBeUpdated.siteName").defaultText(Messages.get(BUNDLE, "ipFilter.form.error.siteName.empty", locale)).build());
+                messages.addMessage(getMessage("toBeUpdated.siteName", "ipFilter.form.error.siteName.empty"));
                 valid = false;
             }
 
             if (StringUtils.isBlank(toBeUpdated.getType()))
             {
-                messages.addMessage(new MessageBuilder().error().source("toBeUpdated.type").defaultText(Messages.get(BUNDLE, "ipFilter.form.error.type.empty", locale)).build());
+                messages.addMessage(getMessage("toBeUpdated.type", "ipFilter.form.error.type.empty"));
                 valid = false;
             }
         }
@@ -221,6 +234,13 @@ public class IPRulesModel implements Serializable
         return valid;
     }
 
+    /**
+     * This methode validate the rulename basing on the existing rule list.
+     * A rule name is consider invalid if the list already contain a rule with this name for the same site
+     * @param name the rule name to validate
+     * @param sitename the site on which the rule applies
+     * @return boolean The validation result
+     */
     public boolean validateRuleName(String name, String sitename)
     {
         boolean valid = true;
@@ -234,6 +254,13 @@ public class IPRulesModel implements Serializable
         return valid;
     }
 
+    /**
+     * This methode validate a rule mask basing on the existing rule list.
+     * A rule mask is consider invalid if the list already contain a rule with this mask for the same site
+     * @param mask the rule mask to validate
+     * @param sitename the site on which the rule applies
+     * @return boolean The validation result
+     */
     public boolean validateRuleMask(String mask, String sitename)
     {
         boolean valid = true;

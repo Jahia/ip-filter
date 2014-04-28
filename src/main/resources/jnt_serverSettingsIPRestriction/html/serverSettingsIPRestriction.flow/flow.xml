@@ -14,19 +14,17 @@
         </on-entry>
 
         <transition on="ipRulesCreateRules">
-            <evaluate expression="flowHandler.createRules(ipRulesModel, externalContext.requestMap.renderContext)" result="flowScope.ipRulesModel"/>
+            <evaluate expression="flowHandler.createRules(ipRulesModel)" result="flowScope.ipRulesModel"/>
         </transition>
         <transition on="ipRulesUpdateRules">
-            <evaluate expression="flowHandler.updateRules(ipRulesModel, externalContext.requestMap.renderContext)" result="flowScope.ipRulesModel"/>
+            <evaluate expression="flowHandler.updateRules(ipRulesModel)" result="flowScope.ipRulesModel"/>
         </transition>
         <transition on="ipRulesDeleteRules" validate="false">
-            <evaluate expression="flowHandler.deleteRules(ipRulesModel, externalContext.requestMap.renderContext)" result="flowScope.ipRulesModel"/>
+            <evaluate expression="flowHandler.deleteRules(ipRulesModel)" result="flowScope.ipRulesModel"/>
         </transition>
         <transition on="ipRulesSelectSite" validate="false"/>
-    </view-state>
-    <global-transitions>
         <transition on="ipRulesCancel" to="serverSettingsIPRestrictionPage" bind="false" validate="false">
             <evaluate expression="flowHandler.initIPRules()" result="flowScope.ipRulesModel"/>
         </transition>
-    </global-transitions>
+    </view-state>
 </flow>

@@ -1,9 +1,14 @@
 package org.jahia.modules.IPFilter.webflow.model;
 
+import org.jahia.modules.IPFilter.IPRule;
+
 import java.util.Comparator;
 
 /**
  * Created by rizak on 13/04/14.
+ * This class defines an IPRule Comparator
+ * The IPRules are ordered by sitename then alphebetical order.
+ * The site "all" is always on top of the list
  */
 public class CustomIpRuleComparator implements Comparator<IPRule>
 {

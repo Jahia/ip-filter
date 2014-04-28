@@ -1,11 +1,10 @@
 package org.jahia.modules.IPFilter.filter;
 
-
 import org.apache.commons.net.util.SubnetUtils;
 import org.jahia.api.Constants;
 import org.jahia.bin.ActionResult;
 import org.jahia.exceptions.JahiaForbiddenAccessException;
-import org.jahia.modules.IPFilter.webflow.model.IPRule;
+import org.jahia.modules.IPFilter.IPRule;
 import org.jahia.services.content.JCRCallback;
 import org.jahia.services.content.JCRNodeWrapper;
 import org.jahia.services.content.JCRSessionWrapper;
@@ -20,14 +19,16 @@ import org.springframework.beans.factory.InitializingBean;
 import javax.jcr.PathNotFoundException;
 import javax.jcr.RepositoryException;
 import java.util.*;
+import java.util.concurrent.locks.ReadWriteLock;
+import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 
 /**
- * Created by IntelliJ IDEA.
- * User: pol
- * Date: 29.05.12
+ * Created by Rahmed.
+ * Date: 15.04.14
  * Time: 14:10
- * To change this template use File | Settings | File Templates.
+ * This class define a filter that will apply I.P Filtering on Digital factory pages.
+ * It is initiated with the /settings/ip-filters nodes and updated by the module webflow.
  */
 public class IPFilter extends AbstractFilter implements InitializingBean {
     private static final Logger logger = org.slf4j.LoggerFactory.getLogger(IPFilter.class);
@@ -40,195 +41,200 @@ public class IPFilter extends AbstractFilter implements InitializingBean {
 
     private String filteringRule="";
 
+    private ReadWriteLock filterLock = new ReentrantReadWriteLock();
+
     public void setJcrTemplate(JCRTemplate jcrTemplate) {
         this.jcrTemplate = jcrTemplate;
     }
 
-    public Map<String, List<IPRule>> getRules() {
-        return rules;
-    }
-
-    public void putRule(String sitename, IPRule rule)
+    /**
+     *This function add a rule under a site key in the rule Map buffer of the Filter
+     * @author Rahmed
+     * @param sitename : Site on which apply the rule
+     * @param rule : The rule object
+     */
+    private void putRule(Map<String, List<IPRule>> ruleMap,String sitename, IPRule rule)
     {
-        logger.debug("Adding Rule Start");
-        if(this.rules.get(sitename)!=null)
-        {
-            if(this.rules.get(sitename).contains(rule))
-            {
-                //rule already exists in the list just updating its values
-                int index = this.rules.get(sitename).indexOf(rule);
-                this.rules.get(sitename).get(index).setName(rule.getName());
-                this.rules.get(sitename).get(index).setDescription(rule.getDescription());
-                this.rules.get(sitename).get(index).setType(rule.getType());
-                this.rules.get(sitename).get(index).setIpMask(rule.getIpMask());
-                this.rules.get(sitename).get(index).setStatus(rule.isStatus());
+        if(logger.isDebugEnabled()){
+            logger.debug("Adding Rule Start");
+        }
+        //Rules already exists for this site
+        if(ruleMap.get(sitename)!=null){//This rule already exists (Rule Update)
+            if(ruleMap.get(sitename).contains(rule)){//rule already exists in the list just updating its values
+                int index = ruleMap.get(sitename).indexOf(rule);
+                ruleMap.get(sitename).get(index).setName(rule.getName());
+                ruleMap.get(sitename).get(index).setDescription(rule.getDescription());
+                ruleMap.get(sitename).get(index).setType(rule.getType());
+                ruleMap.get(sitename).get(index).setIpMask(rule.getIpMask());
+                ruleMap.get(sitename).get(index).setActive(rule.isActive());
             }
-            else
-            {
-                //rule not yet in the list adding it
-                this.rules.get(sitename).add(rule);
+            else{//rule not yet in the list adding it
+                ruleMap.get(sitename).add(rule);
             }
         }
-        else
-        {
-            //No rules yet for this site creating a list and adding the rule inside
-            this.rules.put(sitename, new ArrayList<IPRule>());
-            this.rules.get(sitename).add(rule);
+        else{//No rules yet for this site creating a list and adding the rule inside
+            ruleMap.put(sitename, new ArrayList<IPRule>());
+            ruleMap.get(sitename).add(rule);
             this.sitesPhilosophy.put(sitename,rule.getType());
         }
-        logger.debug("Adding Rule End");
-    }
-
-    public void deleteRule(String sitename, IPRule rule)
-    {
-        logger.debug("Adding Rule Start");
-        this.rules.get(sitename).remove(rule);
-        if(rules.get(sitename).size() == 0)
-        {
-            rules.remove(sitename);
-            sitesPhilosophy.remove(sitename);
+        if(logger.isDebugEnabled()){
+            logger.debug("Adding Rule End");
         }
-        logger.debug("Adding Rule End");
     }
 
-    public void initFilter()
+
+
+    /**
+     * This function makes the filter buffer map initialization, reading JCR nodes.
+     * @author Rahmed
+     */
+    public void initFilter() throws RepositoryException
     {
-        rules = new HashMap<String, List<IPRule>>();
-
-        if(jcrTemplate!=null)
-        {
-            try
-            {
-                jcrTemplate.doExecuteWithSystemSession(null, Constants.EDIT_WORKSPACE,
-                        new JCRCallback<ActionResult>() {
-                            @Override
-                            public ActionResult doInJCR(JCRSessionWrapper session) throws RepositoryException
-                            {
-                                JCRNodeWrapper filtersFolder;
-
-                                try
+        filterLock.writeLock().lock();
+        try{
+            if(jcrTemplate!=null){
+                try{
+                    rules = jcrTemplate.doExecuteWithSystemSession(null, Constants.EDIT_WORKSPACE,
+                            new JCRCallback<Map<String, List<IPRule>>>() {
+                                @Override
+                                public Map<String, List<IPRule>> doInJCR(JCRSessionWrapper session) throws RepositoryException
                                 {
-                                    filtersFolder = session.getNode("/settings/ip-filters");
-                                    if(filtersFolder.hasNodes())
+                                    JCRNodeWrapper filtersFolder;
+                                    Map<String, List<IPRule>> newRules = new HashMap<String, List<IPRule>>();
+                                    try
                                     {
-                                        for(JCRNodeWrapper filtersSiteNode : filtersFolder.getNodes())
-                                        {
-                                            sitesPhilosophy.put(filtersSiteNode.getName(),filtersSiteNode.getProperty("j:filterPhilosophy").getString());
-                                            for(JCRNodeWrapper ruleNode : filtersSiteNode.getNodes())
-                                            {
-                                                IPRule currentRule = new IPRule(ruleNode.getProperty("j:description").getString(),ruleNode.getIdentifier(),ruleNode.getProperty("j:ipMask").getString(),ruleNode.getProperty("j:name").getString(),filtersSiteNode.getName(),ruleNode.getProperty("j:status").getBoolean(), ruleNode.getProperty("j:type").getString());
-                                                putRule(filtersSiteNode.getName(), currentRule);
+                                        //Getting the filter folder node
+                                        filtersFolder = session.getNode("/settings/ip-filters");
+
+                                        if(filtersFolder.hasNodes()){//filters are defines
+                                            for(JCRNodeWrapper filtersSiteNode : filtersFolder.getNodes()){
+                                                sitesPhilosophy.put(filtersSiteNode.getName(),filtersSiteNode.getProperty("j:filterPhilosophy").getString());
+                                                for(JCRNodeWrapper ruleNode : filtersSiteNode.getNodes())
+                                                {
+                                                    IPRule currentRule = new IPRule(ruleNode.getProperty("j:description").getString(),ruleNode.getIdentifier(),ruleNode.getProperty("j:ipMask").getString(),ruleNode.getProperty("j:name").getString(),filtersSiteNode.getName(),ruleNode.getProperty("j:active").getBoolean(), ruleNode.getProperty("j:type").getString());
+                                                    putRule(newRules, filtersSiteNode.getName(), currentRule);
+                                                }
                                             }
                                         }
                                     }
+                                    catch (PathNotFoundException e)
+                                    {
+                                        logger.debug("No I.P Filter Rules defined", e);
+                                    }
+                                    return newRules;
                                 }
-                                catch (PathNotFoundException e)
-                                {
-                                    logger.debug("No I.P Filter Rules defined", e);
-                                }
-                                return null;
-                            }
-                        });
+                            });
+                }catch(RepositoryException e){
+                    logger.error("Failed to initiate the IP Filter Rules", e);
+                    throw new RepositoryException();
+                }
             }
-            catch(RepositoryException e)
-            {
-                logger.error("Failed to initiate the IP Filter Rules", e);
-            }
+        }
+        finally {
+            filterLock.writeLock().unlock();
         }
     }
 
+    /**
+     * This function read the IP rules buffer and apply filter on the site called by the request if needed
+     * @author Rahmed
+     * @param renderContext The render context
+     * @param resource The resource to render
+     * @param chain The render chain
+     * @return Content to stop the chain, or null to continue
+     * @throws Exception
+     */
     public String prepare(RenderContext renderContext, Resource resource, RenderChain chain) throws Exception
     {
-       logger.debug("- IPFilter - prepare - Start");
-        boolean inRange = false;
-        boolean filterNeeded=false;
-        String currentAddress = renderContext.getRequest().getRemoteAddr();
-        JCRNodeWrapper siteNode = renderContext.getSite();
-        Map<String,List<IPRule>> rulesToApply=new HashMap<String, List<IPRule>>();
-        SiteNameComparator snc =  new SiteNameComparator(rulesToApply);
-        if(rules.containsKey("all"))
-        {
-            rulesToApply.put("all",rules.get("all"));
-        }
-        if(rules.containsKey(siteNode.getName()))
-        {
-            rulesToApply.put(siteNode.getName(),rules.get(siteNode.getName()));
-        }
-        TreeMap<String,List<IPRule>> sorted_rules_map = new TreeMap<String,List<IPRule>>(snc);
-        sorted_rules_map.putAll(rulesToApply);
-        for(Map.Entry<String, List<IPRule>> entry : sorted_rules_map.entrySet())
-        {
-            String filterType = sitesPhilosophy.get(entry.getKey());
+        filterLock.readLock().lock();
+        try{
+            if(logger.isDebugEnabled()){
+                logger.debug("- IPFilter - prepare - Start");
+            }
 
-            logger.debug("- IPFilter - prepare - Site : " + siteNode.getName());
-            logger.debug("- IPFilter - prepare - current Address : " + currentAddress);
-            logger.debug("- IPFilter - prepare - rules size : " + rules.size());
-            logger.debug("- IPFilter - prepare - site philosophy : " + sitesPhilosophy.get(siteNode.getName()));
-            logger.debug("- IPFilter - prepare - filter Type : " + filterType);
-            if (filterType != null && sorted_rules_map!=null && !renderContext.getUser().isRoot())
-            {
-                logger.debug("filterType is [" + filterType + "]");
-                if (currentAddress != null)
-                {
-                    if ("deny".equals(filterType))
-                    {
-                        for(IPRule currentRule : entry.getValue())
-                        {
+            boolean inRange = false;
+            boolean filterNeeded=false;
 
-                            if(currentRule.isStatus())
-                            {
-                                filteringRule+=currentRule.getIpMask();
-                                inRange = inRange || isInRange(currentAddress, currentRule,siteNode.getName());
-                                filterNeeded=true;
-                            }
-                        }
-                        if(filterNeeded)
-                        {
-                            if (inRange)
-                            {
-                                logger.warn("IPFilter - prepare - Deny rule: IP [" + currentAddress + "] is in subnet [" + filteringRule + "]");
-                                throw new JahiaForbiddenAccessException();
-                            }
-                        }
+            String currentAddress = renderContext.getRequest().getRemoteAddr();
+            JCRNodeWrapper siteNode = renderContext.getSite();
+
+            List<IPRule> rulesToApply=new ArrayList<IPRule>();
+            //Initializing the ip rule list for this site
+            if(rules.containsKey("all")){
+                rulesToApply.addAll(rules.get("all"));
+            }
+            if(rules.containsKey(siteNode.getName())){
+                rulesToApply.addAll(rules.get(siteNode.getName()));
+            }
+
+            for(IPRule rule : rulesToApply){//browsing the rule list
+
+                String filterType = sitesPhilosophy.get(rule.getSiteName());
+
+                if(logger.isDebugEnabled()){
+                    logger.debug("- IPFilter - prepare - Site : " + siteNode.getName());
+                    logger.debug("- IPFilter - prepare - current Address : " + currentAddress);
+                    logger.debug("- IPFilter - prepare - rules size : " + rules.size());
+                    logger.debug("- IPFilter - prepare - site philosophy : " + sitesPhilosophy.get(siteNode.getName()));
+                    logger.debug("- IPFilter - prepare - filter Type : " + filterType);
+                }
+                if (filterType != null && rulesToApply!=null && !renderContext.getUser().isRoot()){ //if filter is applicable
+                    if(logger.isDebugEnabled()){
+                        logger.debug("filterType is [" + filterType + "]");
                     }
-                    else
-                    {// onlyallow
-                        for(IPRule currentRule : entry.getValue())
-                        {
-                            if(currentRule.isStatus())
-                            {
-                                filteringRule+=currentRule.getIpMask();
-                                inRange = inRange || isInRange(currentAddress, currentRule,siteNode.getName());
+                    if (currentAddress != null){
+                        if ("deny".equals(filterType)){
+                            if(rule.isActive()){
+                                filteringRule+=rule.getIpMask();
+                                inRange = inRange || isInRange(currentAddress, rule);
                                 filterNeeded=true;
                             }
+                            if(filterNeeded && inRange){
+                                    logger.warn("IPFilter - prepare - Deny rule: IP [" + currentAddress + "] is in subnet [" + filteringRule + "]");
+                                    throw new JahiaForbiddenAccessException();
+                            }
                         }
-                        if(filterNeeded)
-                        {
-                            if (!inRange) {
-                                logger.warn("IPFilter - prepare - Only Allow rule:  IP [" + currentAddress + "] not in subnet [" + filteringRule + "]");
-                                throw new JahiaForbiddenAccessException();
+                        else{// onlyallow
+                            if(rule.isActive()){
+                                filteringRule+=rule.getIpMask();
+                                inRange = inRange || isInRange(currentAddress, rule);
+                                filterNeeded=true;
+                            }
+                            if(filterNeeded && inRange){
+                                    logger.warn("IPFilter - prepare - Only Allow rule:  IP [" + currentAddress + "] not in subnet [" + filteringRule + "]");
+                                    throw new JahiaForbiddenAccessException();
                             }
                         }
                     }
                 }
+                inRange=false;
             }
-            inRange=false;
+        }
+        finally
+        {
+            filterLock.readLock().unlock();
         }
         return null;
     }
 
-    private boolean isInRange(String address, IPRule rule, String siteName)
+    /**
+     * This function check if an address is in the range defined by an IP rule
+     * @author Rahmed
+     * @param address The address to check
+     * @param rule The ip rule from which IP Mask is taken to check the address
+     * @return
+     */
+    private boolean isInRange(String address, IPRule rule)
     {
         String range=rule.getIpMask().replace("localhost","127.0.0.1");
         String subnetCidr = range.trim();
         if (subnetCidr != null && !"".equals(subnetCidr))
         {
-            int idx = subnetCidr.indexOf("/32");
-            if (idx != -1) {
-                String standaloneIp = subnetCidr.substring(0, idx);
+            if (subnetCidr.contains("/32")) {
+                String standaloneIp = subnetCidr.substring(0, subnetCidr.indexOf("/32"));
                 return standaloneIp.equals(address);
             }
-            else if (subnetCidr.indexOf("/") == -1)
+            else if (subnetCidr.contains("/"))
             {
                 return subnetCidr.equals(address);
             }

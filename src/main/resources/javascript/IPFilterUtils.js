@@ -1,3 +1,7 @@
+/**
+ * @author Rahmed
+ * This function deploy the detail rows in error back to the update form validation
+ */
 function switchErrorRows()
 {
     var parentId = "";
@@ -11,7 +15,11 @@ function switchErrorRows()
     switchRow(parentId);
 }
 
-
+/**
+ * @author : Rahmed
+ * This function Switch a detail row from display to edit form
+ * @elementId : the id of the row to switch
+ */
 function switchRow(elementId)
 {
     //building css element id
@@ -23,6 +31,9 @@ function switchRow(elementId)
     //Checking which element to show and which element to hide
     if( $(elementId).is(":visible"))
     {
+
+        var elementForm = $(elementFormId);
+        var element = $(elementId);
         if(currentForm!='')
         {
             $(currentForm).hide();
@@ -31,9 +42,9 @@ function switchRow(elementId)
             $(currentElement).show();
         }
         //Hide the display row
-        $(elementId).hide();
+        element.hide();
         //Show the form
-        $(elementFormId).show();
+        elementForm.show();
         $(elementFormId+" .updateField").prop("disabled",false);
         $(elementFormId+" .statusSwitch").bootstrapSwitch();
 
@@ -41,44 +52,50 @@ function switchRow(elementId)
     else
     {
         //Hide the Form
-        $(elementFormId).hide();
+        elementForm.hide();
         $(elementFormId+" .updateField").attr("disabled","disabled");
         $(elementFormId+" .statusSwitch").bootstrapSwitch();
         //Show the display Row
-        $(elementId).show();
+        element.show();
     }
     currentElement = elementId;
     currentForm = elementFormId;
     $(currentForm+" .bootstrap-switch").removeClass("bootstrap-switch-disabled");
 }
 
-
+/**
+ * @author : Rahmed
+ * This function predefine and disable the rule type selection on sites that already have at least one rule defined
+ * @elementId : the id of the row to switch
+ */
 function ApplyRuleConstraints()
 {
     var currentSite = $(".sites select").val();
+    var ruleTypeTextInput = $(".ruleType input:text");
+    var ruleTypeHiddenInput = $(".ruleType input:hidden");
+    var ruleTypeSelectInput = $(".ruleType select");
+
     if (currentSite in philosophiesMap)
     {
         var currentConstraint = philosophiesMap[currentSite];
         if(currentConstraint!=undefined && currentConstraint != "")
         {
-            $(".ruleType input:text").show();
-            $(".ruleType input:text").prop('disabled', false);
-            $(".ruleType input:text").val(philosophiesDisplayMap[currentSite]);
-            $(".ruleType input:hidden").val(philosophiesMap[currentSite]);
-            $(".ruleType input:text").attr('readOnly', 'readOnly');
-            $(".ruleType select").hide();
-            $(".ruleType select").prop('disabled', true);
-
+            ruleTypeTextInput.show();
+            ruleTypeTextInput.prop('disabled', false);
+            ruleTypeTextInput.val(philosophiesDisplayMap[currentSite]);
+            ruleTypeHiddenInput.val(philosophiesMap[currentSite]);
+            ruleTypeTextInput.attr('readOnly', 'readOnly');
+            ruleTypeSelectInput.hide();
+            ruleTypeSelectInput.prop('disabled', true);
         }
     }
     else
     {
         //Disable and hide input text
-        $(".ruleType input:text").prop('disabled', true);
-        $(".ruleType input:text").hide();
-
-        $(".ruleType select").prop('disabled', false);
-        $(".ruleType input:hidden").val($(".ruleType select").val());
-        $(".ruleType select").show();
+        ruleTypeTextInput.prop('disabled', true);
+        ruleTypeTextInput.hide();
+        ruleTypeSelectInput.prop('disabled', false);
+        ruleTypeHiddenInput.val($(".ruleType select").val());
+        ruleTypeSelectInput.show();
     }
 }
