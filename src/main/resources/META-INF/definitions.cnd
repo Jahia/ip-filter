@@ -8,11 +8,8 @@
 - j:filterPhilosophy (string)
 
 [jnt:ipRestriction]
-extends=jnt:virtualsite
-itemtype=options
   - j:description (string)
-  - j:ipMask (string)
-  - j:name (string)
-  - j:active (boolean)
-  - j:type (string, choicelist[resourceBundle]) = 'deny' autocreated indexed=no < 'deny','onlyallow'
-  - ipRangeList (string) = '192.168.1.0/24,192.168.2.0/24'
+  - j:ipMask (string) mandatory
+  - j:name (string) mandatory
+  - j:active (boolean) mandatory
+  - j:type (string, choicelist[resourceBundle]) = 'deny' autocreated mandatory indexed=no < 'deny','onlyallow'

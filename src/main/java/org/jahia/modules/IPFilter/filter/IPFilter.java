@@ -139,67 +139,60 @@ public class IPFilter extends AbstractFilter implements InitializingBean {
      * @throws Exception
      */
     public String prepare(RenderContext renderContext, Resource resource, RenderChain chain) throws Exception {
-        filterLock.readLock().lock();
-        try {
-            if (logger.isDebugEnabled()) {
-                logger.debug("- IPFilter - prepare - Start");
-            }
-
-            boolean inRange = false;
-            boolean filterNeeded = false;
-
-            String currentAddress = renderContext.getRequest().getRemoteAddr();
-            JCRNodeWrapper siteNode = renderContext.getSite();
-
-            List<IPRule> rulesToApply = new ArrayList<IPRule>();
-            //Initializing the ip rule list for this site
-            if (rules.containsKey("all")) {
-                rulesToApply.addAll(rules.get("all"));
-            }
-            if (rules.containsKey(siteNode.getName())) {
-                rulesToApply.addAll(rules.get(siteNode.getName()));
-            }
-
-            for (IPRule rule : rulesToApply) {//browsing the rule list
-
-                String filterType = sitesPhilosophy.get(rule.getSiteName());
-
+        if (!renderContext.getUser().isRoot()) {
+            filterLock.readLock().lock();
+            try {
                 if (logger.isDebugEnabled()) {
-                    logger.debug("- IPFilter - prepare - Site : " + siteNode.getName());
-                    logger.debug("- IPFilter - prepare - current Address : " + currentAddress);
-                    logger.debug("- IPFilter - prepare - rules size : " + rules.size());
-                    logger.debug("- IPFilter - prepare - site philosophy : " + sitesPhilosophy.get(siteNode.getName()));
-                    logger.debug("- IPFilter - prepare - filter Type : " + filterType);
+                    logger.debug("- IPFilter - prepare - Start");
                 }
-                if (filterType != null && rulesToApply != null && !renderContext.getUser().isRoot()) { //if filter is applicable
+
+                boolean inRange = false;
+
+                String currentAddress = renderContext.getRequest().getRemoteAddr();
+                JCRNodeWrapper siteNode = renderContext.getSite();
+
+                List<IPRule> rulesToApply = new ArrayList<IPRule>();
+                //Initializing the ip rule list for this site
+                if (rules.containsKey("all")) {
+                    rulesToApply.addAll(rules.get("all"));
+                }
+                if (rules.containsKey(siteNode.getName())) {
+                    rulesToApply.addAll(rules.get(siteNode.getName()));
+                }
+
+                for (IPRule rule : rulesToApply) {//browsing the rule list
+                    String filterType = sitesPhilosophy.get(rule.getSiteName());
+                    if (logger.isDebugEnabled()) {
+                        logger.debug("- IPFilter - prepare - Site : " + siteNode.getName());
+                        logger.debug("- IPFilter - prepare - current Address : " + currentAddress);
+                        logger.debug("- IPFilter - prepare - rules size : " + rules.size());
+                        logger.debug("- IPFilter - prepare - site philosophy : " + sitesPhilosophy.get(siteNode.getName()));
+                        logger.debug("- IPFilter - prepare - filter Type : " + filterType);
+                    }
                     if (logger.isDebugEnabled()) {
                         logger.debug("filterType is [" + filterType + "]");
                     }
-                    if (currentAddress != null) {
-                        if ("deny".equals(filterType)) {
+                    if ("deny".equals(filterType)) {
 
-                            filteringRule += rule.getIpMask();
-                            inRange = inRange || isInRange(currentAddress, rule);
-                            filterNeeded = true;
+                        filteringRule = rule.getIpMask();
+                        inRange = inRange || isInRange(currentAddress, rule);
+                        if (inRange) {
+                            logger.warn("IPFilter - prepare - Deny rule: IP [" + currentAddress + "] is in subnet [" + filteringRule + "]");
+                            throw new JahiaForbiddenAccessException();
+                        }
+                    } else {// onlyallow
+                        filteringRule = rule.getIpMask();
+                        inRange = inRange || isInRange(currentAddress, rule);
 
-                            if (filterNeeded && inRange) {
-                                logger.warn("IPFilter - prepare - Deny rule: IP [" + currentAddress + "] is in subnet [" + filteringRule + "]");
-                                throw new JahiaForbiddenAccessException();
-                            }
-                        } else {// onlyallow
-                                filteringRule += rule.getIpMask();
-                                inRange = inRange || isInRange(currentAddress, rule);
-                                filterNeeded = true;
-                                if (filterNeeded && !inRange) {
-                                    logger.warn("IPFilter - prepare - Only Allow rule:  IP [" + currentAddress + "] not in subnet [" + filteringRule + "]");
-                                    throw new JahiaForbiddenAccessException();
-                                }
+                        if (!inRange) {
+                            logger.warn("IPFilter - prepare - Only Allow rule:  IP [" + currentAddress + "] not in subnet [" + filteringRule + "]");
+                            throw new JahiaForbiddenAccessException();
                         }
                     }
                 }
+            } finally {
+                filterLock.readLock().unlock();
             }
-        } finally {
-            filterLock.readLock().unlock();
         }
         return null;
     }
