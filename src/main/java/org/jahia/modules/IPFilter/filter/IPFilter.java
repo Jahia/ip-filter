@@ -105,8 +105,10 @@ public class IPFilter extends AbstractFilter implements InitializingBean {
                                             for (JCRNodeWrapper filtersSiteNode : filtersFolder.getNodes()) {
                                                 sitesPhilosophy.put(filtersSiteNode.getName(), filtersSiteNode.getProperty("j:filterPhilosophy").getString());
                                                 for (JCRNodeWrapper ruleNode : filtersSiteNode.getNodes()) {
-                                                    IPRule currentRule = new IPRule(ruleNode.getProperty("j:description").getString(), ruleNode.getIdentifier(), ruleNode.getProperty("j:ipMask").getString(), ruleNode.getProperty("j:name").getString(), filtersSiteNode.getName(), ruleNode.getProperty("j:active").getBoolean(), ruleNode.getProperty("j:type").getString());
-                                                    putRule(newRules, filtersSiteNode.getName(), currentRule);
+                                                    if (ruleNode.getProperty("j:active").getBoolean()) {
+                                                        IPRule currentRule = new IPRule(ruleNode.getProperty("j:description").getString(), ruleNode.getIdentifier(), ruleNode.getProperty("j:ipMask").getString(), ruleNode.getProperty("j:name").getString(), filtersSiteNode.getName(), ruleNode.getProperty("j:active").getBoolean(), ruleNode.getProperty("j:type").getString());
+                                                        putRule(newRules, filtersSiteNode.getName(), currentRule);
+                                                    }
                                                 }
                                             }
                                         }
