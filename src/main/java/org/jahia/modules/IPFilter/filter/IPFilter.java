@@ -176,7 +176,7 @@ public class IPFilter extends AbstractFilter implements InitializingBean {
                         logger.debug("filterType is [" + filterType + "]");
                     }
                     if (currentAddress != null) {
-                        if ("deny".equals(filterType) && rule.isActive()) {
+                        if ("deny".equals(filterType)) {
 
                             filteringRule += rule.getIpMask();
                             inRange = inRange || isInRange(currentAddress, rule);
@@ -187,7 +187,6 @@ public class IPFilter extends AbstractFilter implements InitializingBean {
                                 throw new JahiaForbiddenAccessException();
                             }
                         } else {// onlyallow
-                            if (rule.isActive()) {
                                 filteringRule += rule.getIpMask();
                                 inRange = inRange || isInRange(currentAddress, rule);
                                 filterNeeded = true;
@@ -195,8 +194,6 @@ public class IPFilter extends AbstractFilter implements InitializingBean {
                                     logger.warn("IPFilter - prepare - Only Allow rule:  IP [" + currentAddress + "] not in subnet [" + filteringRule + "]");
                                     throw new JahiaForbiddenAccessException();
                                 }
-                            }
-
                         }
                     }
                 }
