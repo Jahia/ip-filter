@@ -153,6 +153,7 @@
         <div class="clearfix"></div>
     </div>
 </div>
+
 <div class="container">
     <div class="row-fluid">
         <div class="span12">
@@ -164,117 +165,117 @@
                     </div>
                 </c:when>
                 <c:otherwise>
-                        <div class="selectSite">
-                            <form:form name="updateRules" class="selectSiteForm form-horizontal" action="${flowExecutionUrl}" method="post" modelAttribute="ipRulesModel">
-                                <form:select path="selectedSite" onchange="$('.selectSiteEventId').prop('disabled',false);$('.selectSiteForm').submit()">
-                                    <form:option value="all"> <fmt:message key="ipFilter.form.all"/></form:option>
-                                    <c:forEach var="site" items="${jcr:getDescendantNodes(sitesVar, 'jnt:virtualsite')}">
-                                        <form:option value="${site.name}"> ${site.displayableName}</form:option>
-                                    </c:forEach>
-                                </form:select>
-                                <input type="hidden" class="selectSiteEventId" name="_eventId" value="ipRulesSelectSite" disabled="disabled"/>
-                            </form:form>
-                        </div>
+                    <div class="selectSite">
+                        <form:form name="updateRules" class="selectSiteForm form-horizontal" action="${flowExecutionUrl}" method="post" modelAttribute="ipRulesModel">
+                            <form:select path="selectedSite" onchange="$('.selectSiteEventId').prop('disabled',false);$('.selectSiteForm').submit()">
+                                <form:option value="all"> <fmt:message key="ipFilter.form.all"/></form:option>
+                                <c:forEach var="site" items="${jcr:getDescendantNodes(sitesVar, 'jnt:virtualsite')}">
+                                    <form:option value="${site.name}"> ${site.displayableName}</form:option>
+                                </c:forEach>
+                            </form:select>
+                            <input type="hidden" class="selectSiteEventId" name="_eventId" value="ipRulesSelectSite" disabled="disabled"/>
+                        </form:form>
+                    </div>
 
-                        <c:forEach items="${ipRuleList}" var="ipRule" varStatus="keys">
-                            <c:choose>
-                                <c:when test="${ipRule.siteName eq 'all'}">
-                                    <fmt:message key="ipFilter.form.all" var="siteName"/>
-                                </c:when>
-                                <c:otherwise>
-                                    <jcr:node var="site" path="/sites/${ipRule.siteName}"/>
-                                    <c:set var="siteName" value="${site.displayableName}"/>
-                                </c:otherwise>
-                            </c:choose>
-                            <c:if test="${(ipRulesModel.selectedSite == ipRule.siteName) or (ipRulesModel.selectedSite == 'all')}">
-                                <form:form name="updateRules" class="updateRulesForm form-horizontal" action="${flowExecutionUrl}" method="post" modelAttribute="ipRulesModel">
-                                        <div id="filter_${keys.count}" class="row-fluid">
-                                            <div class="box-1">
-                                                <div class="span11">
-                                                     <div class="span2"><strong><fmt:message key="ipFilter.form.name"/></strong> : ${ipRule.name}&nbsp;</div>
-                                                     <div class="span2">
-                                                         <strong><fmt:message key="ipFilter.form.applyOn"/></strong> : ${siteName}&nbsp;
-                                                     </div>
-                                                     <div class="span2"><strong><fmt:message key="ipFilter.form.description"/></strong> : ${ipRule.description}&nbsp;</div>
-                                                     <div class="span2"><strong><fmt:message key="ipFilter.form.type"/></strong> : ${ipRule.type}&nbsp;</div>
-                                                     <div class="span2">
-                                                         <strong><fmt:message key="ipFilter.form.ipMask"/></strong> : ${ipRule.ipMask}&nbsp;
-                                                     </div>
-                                                     <div class="span1">
-                                                         <c:choose>
-                                                             <c:when test="${ipRule.status}">
-                                                                 <span class="text-success"><strong><fmt:message key="ipFilter.form.active"/></strong></span>&nbsp;
-                                                             </c:when>
-                                                             <c:otherwise>
-                                                                 <span class="text-error"><fmt:message key="ipFilter.form.inactive"/></span>&nbsp;
-                                                             </c:otherwise>
-                                                         </c:choose>
-                                                     </div>
-                                                </div>
-                                                <div class="span1">
+                    <c:forEach items="${ipRuleList}" var="ipRule" varStatus="keys">
+                        <c:choose>
+                            <c:when test="${ipRule.siteName eq 'all'}">
+                                <fmt:message key="ipFilter.form.all" var="siteName"/>
+                            </c:when>
+                            <c:otherwise>
+                                <jcr:node var="site" path="/sites/${ipRule.siteName}"/>
+                                <c:set var="siteName" value="${site.displayableName}"/>
+                            </c:otherwise>
+                        </c:choose>
+                        <c:if test="${(ipRulesModel.selectedSite == ipRule.siteName) or (ipRulesModel.selectedSite == 'all')}">
+                            <form:form name="updateRules" class="updateRulesForm form-horizontal" action="${flowExecutionUrl}" method="post" modelAttribute="ipRulesModel">
+                                <div id="filter_${keys.count}" class="row-fluid">
+                                    <div class="box-1">
+                                        <div class="span11">
+                                            <div class="span2"><strong><fmt:message key="ipFilter.form.name"/></strong> : ${ipRule.name}&nbsp;</div>
+                                            <div class="span2">
+                                                <strong><fmt:message key="ipFilter.form.applyOn"/></strong> : ${siteName}&nbsp;
+                                            </div>
+                                            <div class="span2"><strong><fmt:message key="ipFilter.form.description"/></strong> : ${ipRule.description}&nbsp;</div>
+                                            <div class="span2"><strong><fmt:message key="ipFilter.form.type"/></strong> : ${ipRule.type}&nbsp;</div>
+                                            <div class="span2">
+                                                <strong><fmt:message key="ipFilter.form.ipMask"/></strong> : ${ipRule.ipMask}&nbsp;
+                                            </div>
+                                            <div class="span1">
+                                                <c:choose>
+                                                    <c:when test="${ipRule.active}">
+                                                        <span class="text-success"><strong><fmt:message key="ipFilter.form.active"/></strong></span>&nbsp;
+                                                    </c:when>
+                                                    <c:otherwise>
+                                                        <span class="text-error"><fmt:message key="ipFilter.form.inactive"/></span>&nbsp;
+                                                    </c:otherwise>
+                                                </c:choose>
+                                            </div>
+                                        </div>
+                                        <div class="span1">
                                                      <span>
                                                          <button class="btn btn-primary" type="button" onclick="switchRow('filter_${keys.count}')">
                                                              <fmt:message key="label.clickToEdit"/>
                                                          </button>
                                                      </span>
+                                        </div>
+                                        <div class="clearfix"></div>
+                                    </div>
+                                </div>
+                                <div id="filter_${keys.count}_form" class="row-fluid hide" style="margin-top:15px;">
+                                    <fmt:message key='ipFilter.form.active' var="activeLabel"/>
+                                    <fmt:message key='ipFilter.form.inactive' var="inactiveLabel"/>
+                                    <div class="alert alert-info">
+                                            ${siteName}
+                                        <div class="control-group">
+                                            <form:label class="control-label" path="ipRuleList[${keys.count-1}].name"><fmt:message key="ipFilter.form.name"/> : </form:label>
+                                            <div class="controls">
+                                                <form:input path="ipRuleList[${keys.count-1}].name" cssClass="updateField"/>
+                                                <div>
+                                                    <c:if test="${ipRulesModel.ruleIndex eq keys.count-1}"><form:errors path="toBeUpdated.name" cssClass="fieldError" parentId="filter_${keys.count}"/></c:if>
                                                 </div>
-                                                <div class="clearfix"></div>
                                             </div>
                                         </div>
-                                    <div id="filter_${keys.count}_form" class="row-fluid hide" style="margin-top:15px;">
-                                        <fmt:message key='ipFilter.form.active' var="activeLabel"/>
-                                        <fmt:message key='ipFilter.form.inactive' var="inactiveLabel"/>
-                                        <div class="alert alert-info">
-                                                ${siteName}
-                                            <div class="control-group">
-                                                <form:label class="control-label" path="ipRuleList[${keys.count-1}].name"><fmt:message key="ipFilter.form.name"/> : </form:label>
-                                                <div class="controls">
-                                                    <form:input path="ipRuleList[${keys.count-1}].name" cssClass="updateField"/>
-                                                    <div>
-                                                        <c:if test="${ipRulesModel.ruleIndex eq keys.count-1}"><form:errors path="toBeUpdated.name" cssClass="fieldError" parentId="filter_${keys.count}"/></c:if>
-                                                    </div>
+                                        <div class="control-group">
+                                            <form:label class="control-label" path="ipRuleList[${keys.count-1}].description"><fmt:message key="ipFilter.form.description"/> : </form:label>
+                                            <div class="controls">
+                                                <form:input path="ipRuleList[${keys.count-1}].description" cssClass="updateField"/>
+                                            </div>
+                                        </div>
+                                        <div class="control-group">
+                                            <form:label class="control-label" path="ipRuleList[${keys.count-1}].ipMask"><fmt:message key="ipFilter.form.ipMask"/> : </form:label>
+                                            <div class="controls">
+                                                <form:input path="ipRuleList[${keys.count-1}].ipMask" cssClass="updateField"/>
+                                                <div>
+                                                    <c:if test="${ipRulesModel.ruleIndex eq keys.count-1}"><form:errors path="toBeUpdated.ipMask" cssClass="fieldError" parentId="filter_${keys.count}"/></c:if>
                                                 </div>
                                             </div>
-                                            <div class="control-group">
-                                                <form:label class="control-label" path="ipRuleList[${keys.count-1}].description"><fmt:message key="ipFilter.form.description"/> : </form:label>
-                                                <div class="controls">
-                                                    <form:input path="ipRuleList[${keys.count-1}].description" cssClass="updateField"/>
-                                                </div>
+                                        </div>
+                                        <div class="control-group">
+                                            <div class="controls">
+                                                <form:checkbox cssClass="updateField statusSwitch" path="ipRuleList[${keys.count-1}].active" data-size="mini" data-on-text="${activeLabel}" data-off-text="${inactiveLabel}" data-on-color="success" data-off-color="danger"/>
                                             </div>
-                                            <div class="control-group">
-                                                <form:label class="control-label" path="ipRuleList[${keys.count-1}].ipMask"><fmt:message key="ipFilter.form.ipMask"/> : </form:label>
-                                                <div class="controls">
-                                                    <form:input path="ipRuleList[${keys.count-1}].ipMask" cssClass="updateField"/>
-                                                    <div>
-                                                        <c:if test="${ipRulesModel.ruleIndex eq keys.count-1}"><form:errors path="toBeUpdated.ipMask" cssClass="fieldError" parentId="filter_${keys.count}"/></c:if>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                            <div class="control-group">
-                                                <div class="controls">
-                                                    <form:checkbox cssClass="updateField statusSwitch" path="ipRuleList[${keys.count-1}].status" data-size="mini" data-on-text="${activeLabel}" data-off-text="${inactiveLabel}" data-on-color="success" data-off-color="danger"/>
-                                                </div>
                                             <div class="clear"></div>
-                                            </div>
-                                            <div class="form-action">
-                                                <div class="control-group">
-                                                    <div class="controls">
-                                                        <form:hidden path="ruleIndex" cssClass="formIndex" value="${keys.count-1}"/>
-                                                        <form:hidden value="true" path="updatePhase" cssClass="updateField"/>
-                                                        <button type="submit" name="_eventId_ipRulesUpdateRules" class="btn btn-primary" ><fmt:message key="save"/></button>
-                                                        <button type="submit" name="_eventId_ipRulesCancel"  class="btn">
-                                                            <i class="icon-ban-circle"></i>
-                                                            <fmt:message key="cancel"/>
-                                                        </button>
-                                                        <button type="submit" name="_eventId_ipRulesDeleteRules" class="btn btn-danger" ><fmt:message key="delete"/></button>
-                                                    </div>
+                                        </div>
+                                        <div class="form-action">
+                                            <div class="control-group">
+                                                <div class="controls">
+                                                    <form:hidden path="ruleIndex" cssClass="formIndex" value="${keys.count-1}"/>
+                                                    <form:hidden value="true" path="updatePhase" cssClass="updateField"/>
+                                                    <button type="submit" name="_eventId_ipRulesUpdateRules" class="btn btn-primary" ><fmt:message key="save"/></button>
+                                                    <button type="submit" name="_eventId_ipRulesCancel"  class="btn">
+                                                        <i class="icon-ban-circle"></i>
+                                                        <fmt:message key="cancel"/>
+                                                    </button>
+                                                    <button type="submit" name="_eventId_ipRulesDeleteRules" class="btn btn-danger" ><fmt:message key="delete"/></button>
                                                 </div>
                                             </div>
                                         </div>
                                     </div>
-                                </form:form>
-                            </c:if>
-                        </c:forEach>
+                                </div>
+                            </form:form>
+                        </c:if>
+                    </c:forEach>
                 </c:otherwise>
             </c:choose>
         </div>

@@ -52,6 +52,7 @@ public class IPFilter extends AbstractFilter implements InitializingBean {
 
     /**
      * This function add a rule under a site key in the rule Map buffer of the Filter
+     *
      * @param sitename : Site on which apply the rule
      * @param rule     : The rule object
      */
@@ -173,12 +174,12 @@ public class IPFilter extends AbstractFilter implements InitializingBean {
                         logger.debug("filterType is [" + filterType + "]");
                     }
                     if (currentAddress != null) {
-                        if ("deny".equals(filterType)) {
-                            if (rule.isActive()) {
-                                filteringRule += rule.getIpMask();
-                                inRange = inRange || isInRange(currentAddress, rule);
-                                filterNeeded = true;
-                            }
+                        if ("deny".equals(filterType) && rule.isActive()) {
+
+                            filteringRule += rule.getIpMask();
+                            inRange = inRange || isInRange(currentAddress, rule);
+                            filterNeeded = true;
+
                             if (filterNeeded && inRange) {
                                 logger.warn("IPFilter - prepare - Deny rule: IP [" + currentAddress + "] is in subnet [" + filteringRule + "]");
                                 throw new JahiaForbiddenAccessException();
@@ -188,15 +189,15 @@ public class IPFilter extends AbstractFilter implements InitializingBean {
                                 filteringRule += rule.getIpMask();
                                 inRange = inRange || isInRange(currentAddress, rule);
                                 filterNeeded = true;
+                                if (filterNeeded && !inRange) {
+                                    logger.warn("IPFilter - prepare - Only Allow rule:  IP [" + currentAddress + "] not in subnet [" + filteringRule + "]");
+                                    throw new JahiaForbiddenAccessException();
+                                }
                             }
-                            if (filterNeeded && inRange) {
-                                logger.warn("IPFilter - prepare - Only Allow rule:  IP [" + currentAddress + "] not in subnet [" + filteringRule + "]");
-                                throw new JahiaForbiddenAccessException();
-                            }
+
                         }
                     }
                 }
-                inRange = false;
             }
         } finally {
             filterLock.readLock().unlock();
