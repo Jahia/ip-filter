@@ -3,11 +3,10 @@ package org.jahia.modules.IPFilter;
 import java.io.Serializable;
 
 /**
- * Created by rizak on 08/04/14.
  * This class defines the object IP Rule with all its methodes and properties
+ * Created by Rahmed on 08/04/14.
  */
-public class IPRule implements Serializable
-{
+public class IPRule implements Serializable {
     private static final long serialVersionUID = -558162577353590216L;
     private String description;
     private String id;
@@ -20,6 +19,7 @@ public class IPRule implements Serializable
     /**
      * This function override the IPRule Object comparaison to order IP Rules by name/sitename
      * It is used in by the list of IPRules in the Module view
+     *
      * @param rule : The other IP rule with which compare this object
      * @return
      */
@@ -29,6 +29,7 @@ public class IPRule implements Serializable
 
     /**
      * IP Rule full constructor
+     *
      * @param description
      * @param id
      * @param ipMask
@@ -37,29 +38,27 @@ public class IPRule implements Serializable
      * @param active
      * @param type
      */
-    public IPRule(String description, String id, String ipMask, String name, String siteName, boolean active, String type )
-    {
-        this.description=description;
-        this.id=id;
-        this.ipMask=ipMask;
-        this.name=name;
-        this.siteName=siteName;
-        this.type=type;
-        this.active=active;
+    public IPRule(String description, String id, String ipMask, String name, String siteName, boolean active, String type) {
+        this.description = description;
+        this.id = id;
+        this.ipMask = ipMask;
+        this.name = name;
+        this.siteName = siteName;
+        this.type = type;
+        this.active = active;
     }
 
     /**
      * IP Rule empty constructor
      */
-    public IPRule()
-    {
-        this.description="";
-        this.id="";
-        this.ipMask="";
-        this.name="";
-        this.siteName="";
-        this.type="";
-        this.active=true;
+    public IPRule() {
+        this.description = "";
+        this.id = "";
+        this.ipMask = "";
+        this.name = "";
+        this.siteName = "";
+        this.type = "";
+        this.active = true;
     }
 
     public String getDescription() {
@@ -102,6 +101,7 @@ public class IPRule implements Serializable
     public void setIpMask(String ipMask) {
         this.ipMask = ipMask;
     }
+
     public void setName(String name) {
         this.name = name;
     }
