@@ -23,7 +23,7 @@ Jahia I.P Filter module v1.0.0
 
 The module displays a rule creation form.
 
-#Form Fields
+###Form Fields Table
 | Field                       | Form Input                  |
 | :-------------------------- | --------------------------- |
 | `Name`                        | Opened text input (Be careful this name will be user as Digital Factory JCR nodename) |
@@ -34,20 +34,20 @@ The module displays a rule creation form.
 
 ---
 ## Rules types definition
-## Allow only
+### Allow only
 The `Allow only` type is a closed base I.P Mask type.
 It means that the concerned site will refuse all I.Ps not defined as `Allow only` in a rule.
-## Deny
+### Deny
 The `Deny` type is an opened base I.P Mask type.
 It means that the concerned site will allow all I.Ps except the ones defined as `Deny` in a rule.
 
 ---
 ## I.P mask definition
-##Single I.P
+###Single I.P
 To define a single I.P, multiple syntaxes are allowed :
 I.P syntax, just the I.P. Example : 192.168.0.1
 I.P subnet bits syntax, the I.P with its bitMask. Example : 192.168.0.1/32
-##I.P range
+###I.P range
 I.P subnet bits syntax, the I.P with its bitMask. Example : 192.168.0.1/29 for the range 192.168.0.1 - 192.168.0.6
 You can use this tool to calculate the I.P range subnet mask : http://www.subnet-calculator.com/
 
@@ -69,5 +69,5 @@ Clicking on this button will proceed with rule deletion
 
 ## Module Setup Deployment
 No settings are needed to run this module.
-Simply deploy it on your Digital Factory instance and it will appear in the Configuration
-Section of server settings.
+Simply deploy it on your Digital Factory instance and it will appear in the `Configuration`
+Section of `Server Settings` page.
