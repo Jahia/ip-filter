@@ -14,13 +14,13 @@
         </on-entry>
 
         <transition on="ipRulesCreateRules">
-            <evaluate expression="flowHandler.createRules(ipRulesModel)" result="flowScope.ipRulesModel"/>
+            <evaluate expression="flowHandler.createRules(ipRulesModel,messageContext)" result="flowScope.ipRulesModel"/>
         </transition>
         <transition on="ipRulesUpdateRules">
-            <evaluate expression="flowHandler.updateRules(ipRulesModel)" result="flowScope.ipRulesModel"/>
+            <evaluate expression="flowHandler.updateRules(ipRulesModel,messageContext)" result="flowScope.ipRulesModel"/>
         </transition>
         <transition on="ipRulesDeleteRules" validate="false">
-            <evaluate expression="flowHandler.deleteRules(ipRulesModel)" result="flowScope.ipRulesModel"/>
+            <evaluate expression="flowHandler.deleteRules(ipRulesModel,messageContext)" result="flowScope.ipRulesModel"/>
         </transition>
         <transition on="ipRulesSelectSite" validate="false"/>
         <transition on="ipRulesCancel" to="serverSettingsIPRestrictionPage" bind="false" validate="false">

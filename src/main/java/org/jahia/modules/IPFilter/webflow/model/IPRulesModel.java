@@ -19,6 +19,7 @@ import java.util.*;
  * Created by Rahmed on 08/04/14.
  */
 public class IPRulesModel implements Serializable {
+
     private static final long serialVersionUID = -603296318726735098L;
     private static final String BUNDLE = "resources.ip-filter";
 
@@ -132,7 +133,7 @@ public class IPRulesModel implements Serializable {
         this.updatePhase = updatePhase;
     }
 
-    private MessageResolver getMessage(String source, String bundleKey) {
+    public MessageResolver getMessage(String source, String bundleKey) {
         Locale locale = LocaleContextHolder.getLocale();
         return new MessageBuilder().error().source(source).defaultText(Messages.get(BUNDLE, bundleKey, locale)).build();
     }

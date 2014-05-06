@@ -1,7 +1,6 @@
 package org.jahia.modules.IPFilter.webflow;
 
 import org.jahia.api.Constants;
-import org.jahia.bin.ActionResult;
 import org.jahia.modules.IPFilter.IPRule;
 import org.jahia.modules.IPFilter.filter.IPFilter;
 import org.jahia.modules.IPFilter.webflow.model.CustomIpRuleComparator;
@@ -12,6 +11,8 @@ import org.jahia.services.content.JCRSessionWrapper;
 import org.jahia.services.content.JCRTemplate;
 import org.slf4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.binding.message.MessageContext;
+import org.springframework.binding.message.MessageResolver;
 
 import javax.jcr.ItemExistsException;
 import javax.jcr.PathNotFoundException;
@@ -26,7 +27,10 @@ import static org.slf4j.LoggerFactory.getLogger;
  * Created by Rahmed on 08/04/14.
  */
 public class IPRulesFlowHandler implements Serializable {
+    private static final long serialVersionUID = -4717495631211740649L;
+
     private static final Logger logger = getLogger(IPRulesFlowHandler.class);
+    private static final String BUNDLE = "resources.ip-filter";
 
     @Autowired
     private transient JCRTemplate jcrTemplate;
@@ -44,10 +48,11 @@ public class IPRulesFlowHandler implements Serializable {
      * @param model The webflow model object containing the rule to create data
      * @return IPRulesModel : the ipRuleModel cleared to reset the form in the Jsp after the node creation
      */
-    public IPRulesModel createRules(IPRulesModel model) {
+    public IPRulesModel createRules(IPRulesModel model, MessageContext messages) throws RepositoryException {
         if (logger.isDebugEnabled()) {
             logger.debug("IPRulesFlowHandler - createRules - Start");
         }
+        boolean created = true;
         //Check the model rule validity
         if (!model.getToBeCreated().getName().isEmpty() && !model.getToBeCreated().getIpMask().isEmpty() && !model.getToBeCreated().getSiteName().isEmpty() && !model.getToBeCreated().getType().isEmpty()) {
             final String description = model.getToBeCreated().getDescription();
@@ -55,13 +60,15 @@ public class IPRulesFlowHandler implements Serializable {
             final String name = model.getToBeCreated().getName();
             final String siteName = model.getToBeCreated().getSiteName();
             final String type = model.getToBeCreated().getType();
+            final MessageResolver itemAlreadyExistsMessage = model.getMessage("toBeCreated.name", "ipFilter.form.error.name.format");
             try {
-                jcrTemplate.doExecuteWithSystemSession(null, Constants.EDIT_WORKSPACE,
-                        new JCRCallback<ActionResult>() {
+                MessageResolver creationResult = jcrTemplate.doExecuteWithSystemSession(null, Constants.EDIT_WORKSPACE,
+                        new JCRCallback<MessageResolver>() {
                             @Override
-                            public ActionResult doInJCR(JCRSessionWrapper session) throws RepositoryException {
+                            public MessageResolver doInJCR(JCRSessionWrapper session) throws RepositoryException {
                                 JCRNodeWrapper ipRulesNode;
                                 JCRNodeWrapper createdNode = null;
+                                boolean jcrOk = true;
                                 try {
                                     ipRulesNode = session.getNode("/settings/ip-filters/" + siteName);
                                 } catch (PathNotFoundException e) {
@@ -91,8 +98,9 @@ public class IPRulesFlowHandler implements Serializable {
                                         ipRulesNode.getNode(name).setProperty("j:name", name);
                                         ipRulesNode.getNode(name).setProperty("j:type", type);
                                         ipRulesNode.getNode(name).setProperty("j:active", true);
-                                    } catch (ItemExistsException e) {
-                                        logger.error("createRules - Item Already Exists", e);
+                                    } catch (ItemExistsException e) {//Node with this name already exists
+                                        logger.error("Item with this name value : " + name + "Already Exists", e);
+                                        jcrOk = false;
                                     }
                                 }
                                 session.save();
@@ -100,19 +108,33 @@ public class IPRulesFlowHandler implements Serializable {
                                     //Reloading the filter
                                     filter.initFilter();
                                 }
-                                return null;
+                                return jcrOk ? null : itemAlreadyExistsMessage;
                             }
                         }
                 );
-            } catch (RepositoryException e) {
-                logger.error("IPRulesFlowHandler - createRules - Failed to create IP Filter Rule Node", e);
+                if (creationResult != null) {//Name already exists
+                    messages.addMessage(creationResult);
+                    created = false;
+                }
+            } catch (RepositoryException e) {//Any other node creation Issue
+                if (e.getCause().toString().contains("IllegalNameException")) {
+                    messages.addMessage(model.getMessage("toBeCreated.name", "ipFilter.form.error.name.format"));
+                    logger.error("IPRulesFlowHandler - createRules - Failed to create IP Filter Rule Node", e);
+                    created = false;
+                } else {
+                    messages.addMessage(model.getMessage("creationPhase", "ipFilter.form.error.create"));
+                    logger.error("IPRulesFlowHandler - createRules - Failed to create IP Filter Rule Node", e);
+                    created = false;
+                }
             }
+        }
+        //Resetting the form in the jsp if the node has been created
+        if (created) {
+            model = initIPRules();
         }
         if (logger.isDebugEnabled()) {
             logger.debug("IPRulesFlowHandler - createRules - End");
         }
-        //Resetting the form in the jsp if the node has been created
-        model = initIPRules();
         return model;
     }
 
@@ -122,7 +144,7 @@ public class IPRulesFlowHandler implements Serializable {
      * @param model the model containing the data on the rule to update
      * @return IPRulesModel : The model containing the updated list of rule sorted as expected
      */
-    public IPRulesModel updateRules(IPRulesModel model) throws RepositoryException {
+    public IPRulesModel updateRules(IPRulesModel model, MessageContext messages) {
         if (logger.isDebugEnabled()) {
             logger.debug("IPRulesFlowHandler - updateRules - Start");
         }
@@ -132,10 +154,10 @@ public class IPRulesFlowHandler implements Serializable {
                 logger.debug("Update Index : " + model.getRuleIndex());
             }
             //Update Rule node in JCR
-            jcrTemplate.doExecuteWithSystemSession(null, Constants.EDIT_WORKSPACE,
-                    new JCRCallback<ActionResult>() {
+            MessageResolver updateResult = jcrTemplate.doExecuteWithSystemSession(null, Constants.EDIT_WORKSPACE,
+                    new JCRCallback<MessageResolver>() {
                         @Override
-                        public ActionResult doInJCR(JCRSessionWrapper session) throws RepositoryException {
+                        public MessageResolver doInJCR(JCRSessionWrapper session) throws RepositoryException {
                             JCRNodeWrapper ipRuleNode = session.getNodeByIdentifier(ipRule.getId());
                             ipRuleNode.setProperty("j:name", ipRule.getName());
                             ipRuleNode.setProperty("j:description", ipRule.getDescription());
@@ -151,9 +173,12 @@ public class IPRulesFlowHandler implements Serializable {
                         }
                     }
             );
+            if (updateResult != null) {
+                messages.addMessage(updateResult);
+            }
         } catch (RepositoryException e) {
             logger.error("IPRulesFlowHandler - updateRules - Failed to Update IP Filter Rule Node", e);
-            throw new RepositoryException();
+            messages.addMessage(model.getMessage("updatePhase", "ipFilter.form.error.update"));
         }
         if (logger.isDebugEnabled()) {
             logger.debug("IPRulesFlowHandler - updateRules - End");
@@ -168,7 +193,8 @@ public class IPRulesFlowHandler implements Serializable {
      * @param model the model containing the data on the rule to delete
      * @return IPRulesModel : the model on which the rule has been deleted
      */
-    public IPRulesModel deleteRules(IPRulesModel model) throws RepositoryException {
+    public IPRulesModel deleteRules(IPRulesModel model, MessageContext messages) {
+        boolean deleted = true;
         if (logger.isDebugEnabled()) {
             logger.debug("IPRulesFlowHandler - deleteRules - Start");
         }
@@ -176,10 +202,10 @@ public class IPRulesFlowHandler implements Serializable {
         final IPRule ipRuletoRemove = model.getIpRuleList().get(model.getRuleIndex());
         //Delete JCR Node
         try {
-            jcrTemplate.doExecuteWithSystemSession(null, Constants.EDIT_WORKSPACE,
-                    new JCRCallback<ActionResult>() {
+            MessageResolver deleteResult = jcrTemplate.doExecuteWithSystemSession(null, Constants.EDIT_WORKSPACE,
+                    new JCRCallback<MessageResolver>() {
                         @Override
-                        public ActionResult doInJCR(JCRSessionWrapper session) throws RepositoryException {
+                        public MessageResolver doInJCR(JCRSessionWrapper session) throws RepositoryException {
                             JCRNodeWrapper ipRuleNode = session.getNodeByIdentifier(ipRuletoRemove.getId());
                             JCRNodeWrapper siteFolder = ipRuleNode.getParent();
                             if (logger.isDebugEnabled()) {
@@ -196,16 +222,23 @@ public class IPRulesFlowHandler implements Serializable {
                         }
                     }
             );
+            if (deleteResult != null) {
+                messages.addMessage(deleteResult);
+                deleted = false;
+            }
         } catch (RepositoryException e) {
             logger.error("IPRulesFlowHandler - deleteRules - Failed to create IP Filter Rule Node", e);
-            throw new RepositoryException();
+            messages.addMessage(model.getMessage("updatePhase", "ipFilter.form.error.delete"));
+            deleted = false;
         }
         if (logger.isDebugEnabled()) {
             logger.debug("IPRulesFlowHandler - deleteRules - Delete Function End");
         }
         model.removeRule(ipRuletoRemove);
-        model.setUpdatePhase(false);
-        model.setCreationPhase(false);
+        if (deleted) {
+            model.setUpdatePhase(true);
+            model.setCreationPhase(false);
+        }
         return model;
     }
 

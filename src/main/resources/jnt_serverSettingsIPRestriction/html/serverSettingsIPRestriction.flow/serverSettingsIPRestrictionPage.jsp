@@ -72,7 +72,7 @@
                         <div class="controls">
                             <form:input path="toBeCreated.name"/>
                             <div class="text-error">
-                                <form:errors path="toBeCreated.name"/>
+                                <strong><form:errors path="toBeCreated.name"/></strong>
                             </div>
                         </div>
                     </div>
@@ -92,7 +92,7 @@
                                 </c:forEach>
                             </form:select>
                             <div class="text-error">
-                                <form:errors path="toBeCreated.siteName"/>
+                                <strong><form:errors path="toBeCreated.siteName"/></strong>
                             </div>
                         </div>
                     </div>
@@ -106,7 +106,7 @@
                             <input type="text" name="displayType"  class="hide" disabled="disabled"/>
                             <form:hidden path="toBeCreated.type" value="onlyallow"/>
                             <div class="text-error">
-                                <form:errors path="toBeCreated.type"/>
+                                <strong><form:errors path="toBeCreated.type"/></strong>
                             </div>
                         </div>
                     </div>
@@ -115,7 +115,7 @@
                         <div class="controls">
                             <form:input path="toBeCreated.ipMask" cssClass="ipMask"/>
                             <div class="text-error">
-                                <form:errors path="toBeCreated.ipMask"/>
+                                <strong><form:errors path="toBeCreated.ipMask"/></strong>
                             </div>
                         </div>
                     </div>
@@ -128,6 +128,9 @@
                                     <i class="icon-ban-circle"></i>
                                     <fmt:message key="cancel"/>
                                 </button>
+                                <div class="text-error">
+                                    <strong><form:errors path="creationPhase"/></strong>
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -192,14 +195,14 @@
                                 <div id="filter_${keys.count}" class="row-fluid">
                                     <div class="box-1">
                                         <div class="span11">
-                                            <div class="span2"><strong><fmt:message key="ipFilter.form.name"/></strong> : ${ipRule.name}&nbsp;</div>
+                                            <div class="span2"><strong><fmt:message key="ipFilter.form.name"/></strong> : ${fn:escapeXml(ipRule.name)}&nbsp;</div>
                                             <div class="span2">
-                                                <strong><fmt:message key="ipFilter.form.applyOn"/></strong> : ${siteName}&nbsp;
+                                                <strong><fmt:message key="ipFilter.form.applyOn"/></strong> : ${fn:escapeXml(siteName)}&nbsp;
                                             </div>
-                                            <div class="span2"><strong><fmt:message key="ipFilter.form.description"/></strong> : ${ipRule.description}&nbsp;</div>
-                                            <div class="span2"><strong><fmt:message key="ipFilter.form.type"/></strong> : ${ipRule.type}&nbsp;</div>
+                                            <div class="span2"><strong><fmt:message key="ipFilter.form.description"/></strong> : ${fn:escapeXml(ipRule.description)}&nbsp;</div>
+                                            <div class="span2"><strong><fmt:message key="ipFilter.form.type"/></strong> : ${fn:escapeXml(ipRule.type)}&nbsp;</div>
                                             <div class="span2">
-                                                <strong><fmt:message key="ipFilter.form.ipMask"/></strong> : ${ipRule.ipMask}&nbsp;
+                                                <strong><fmt:message key="ipFilter.form.ipMask"/></strong> : ${fn:escapeXml(ipRule.ipMask)}&nbsp;
                                             </div>
                                             <div class="span1">
                                                 <c:choose>

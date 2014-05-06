@@ -1,5 +1,4 @@
 /**
- * @author Rahmed
  * This function deploy the detail rows in error back to the update form validation
  */
 function switchErrorRows()
@@ -16,7 +15,6 @@ function switchErrorRows()
 }
 
 /**
- * @author : Rahmed
  * This function Switch a detail row from display to edit form
  * @elementId : the id of the row to switch
  */
@@ -64,27 +62,33 @@ function switchRow(elementId)
 }
 
 /**
- * @author : Rahmed
  * This function predefine and disable the rule type selection on sites that already have at least one rule defined
  * @elementId : the id of the row to switch
  */
 function ApplyRuleConstraints()
 {
+    //Getting site
     var currentSite = $(".sites select").val();
+    //Getting form inputs
     var ruleTypeTextInput = $(".ruleType input:text");
     var ruleTypeHiddenInput = $(".ruleType input:hidden");
     var ruleTypeSelectInput = $(".ruleType select");
 
     if (currentSite in philosophiesMap)
     {
+        //Getting the ruleType constraint form sitename
         var currentConstraint = philosophiesMap[currentSite];
+
         if(currentConstraint!=undefined && currentConstraint != "")
-        {
+        {// A rule type constraint exist on the site
+            //Showing the ruleType value in a read only input
             ruleTypeTextInput.show();
             ruleTypeTextInput.prop('disabled', false);
             ruleTypeTextInput.val(philosophiesDisplayMap[currentSite]);
-            ruleTypeHiddenInput.val(philosophiesMap[currentSite]);
             ruleTypeTextInput.attr('readOnly', 'readOnly');
+            //Submitting the value in hidden form
+            ruleTypeHiddenInput.val(philosophiesMap[currentSite]);
+            //Hiding the select input
             ruleTypeSelectInput.hide();
             ruleTypeSelectInput.prop('disabled', true);
         }
@@ -94,6 +98,7 @@ function ApplyRuleConstraints()
         //Disable and hide input text
         ruleTypeTextInput.prop('disabled', true);
         ruleTypeTextInput.hide();
+        //Enable and show select list
         ruleTypeSelectInput.prop('disabled', false);
         ruleTypeHiddenInput.val($(".ruleType select").val());
         ruleTypeSelectInput.show();
