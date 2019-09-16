@@ -148,7 +148,11 @@ public class IPFilter extends AbstractFilter implements InitializingBean {
 
                 boolean inRange = false;
 
-                String currentAddress = renderContext.getRequest().getRemoteAddr();
+                String currentAddress = renderContext.getRequest().getHeader("X-FORWARDED-FOR");
+                if (currentAddress == null) {
+                    currentAddress = renderContext.getRequest().getRemoteAddr();
+                }
+
                 JCRNodeWrapper siteNode = renderContext.getSite();
 
                 List<IPRule> rulesToApply = new ArrayList<IPRule>();
