@@ -78,18 +78,19 @@
     <parent>
         <artifactId>jahia-modules</artifactId>
         <groupId>org.jahia.modules</groupId>
-        <version>7.0.0.0</version>
+        <version>7.2.1.0</version>
     </parent>
     <groupId>org.jahia.modules</groupId>
     <artifactId>ip-filter</artifactId>
     <name>Ip filter</name>
     <version>1.0-SNAPSHOT</version>    
     <packaging>bundle</packaging>
-    <description>This is the custom module (Ip filter) for running on a Digital Factory server.</description>
+    <description>This is the custom module (Ip filter) for running on a Jahia server.</description>
 
     <scm>
-        <connection>scm:dummy:uri</connection>
-        <developerConnection>scm:dummy:uri</developerConnection>
+        <connection>scm:git:git@github.com:Jahia/ip-filter.git</connection>
+        <developerConnection>scm:git:git@github.com:Jahia/ip-filter.git</developerConnection>
+        <url>https://github.com/jahia/ip-filter</url>
     </scm>
 
     <repositories>

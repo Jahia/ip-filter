@@ -2,23 +2,27 @@
 =========
 
 ## Overview
-The Jahia I.P Filter module provide a user-friendly interface to manage I.P filtering on Digital Factory sites.
-It is accessible from the configuration section in Digital Factory server settings.
-Using this module any user with the `adminIpFilterSettings` permission will be able to restrain the Disgital Factory sites
-To defined I.P or I.P range. The rules can't restrain Digital Factory root user access.
+The Jahia I.P Filter module provide a user-friendly interface to manage I.P filtering on Jahia sites.
+It is accessible from the configuration section in Jahia server settings.
+Using this module any user with the `adminIpFilterSettings` permission will be able to restrain the Jahia sites to defined I.P or I.P range. 
+The rules are only applied to sites and not for administration urls and also does not restrain root user access.
 
 ---
 ## Goals
-- Provide a way to manage I.P filtering on Digital Factory sites.
+- Provide a way to manage I.P filtering on Jahia sites.
 - Support site by site or all sites in one management.
 - Access this functionality directly from administration mode.
-- Manage filtering dynamically ( Without restarting the Digital Factory Server).
+- Manage filtering dynamically ( Without restarting the Jahia Server).
 
 ---
-## Version
-Jahia I.P Filter module v1.0.0
+## Module Deployment and setup
+- In Jahia, go to "Administration --> Server settings --> System components --> Modules"
+- Upload the JAR **ip-filter-X.X.X.jar**
+- Check that the module is started
 
+- Go to "Administration -> Server settings -> Configuration -> IP Filter"
 ---
+
 ## Rules Creation
 
 The module displays a rule creation form.
@@ -26,7 +30,7 @@ The module displays a rule creation form.
 ###Form Fields Table
 | Field                       | Form Input                  |
 | :-------------------------- | --------------------------- |
-| `Name`                        | Opened text input (Be careful this name will be user as Digital Factory JCR nodename) |
+| `Name`                        | Opened text input (Be careful this name will be user as Jahia JCR nodename) |
 | `Description`                 | Opened text input           |
 | `Site`                        | Generated select List       |
 | `Rule type`                   | Choice list (Allow only/Deny)   |
@@ -66,8 +70,3 @@ In this form user can :
 ## Rules Delete
 In the rule Update Form (See Rules Update section) there is a Delete button.
 Clicking on this button will proceed with rule deletion
-
-## Module Setup Deployment
-No settings are needed to run this module.
-Simply deploy it on your Digital Factory instance and it will appear in the `Configuration`
-Section of `Server Settings` page.
