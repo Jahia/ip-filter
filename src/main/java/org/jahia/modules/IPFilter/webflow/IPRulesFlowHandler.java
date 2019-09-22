@@ -30,7 +30,6 @@ public class IPRulesFlowHandler implements Serializable {
     private static final long serialVersionUID = -4717495631211740649L;
 
     private static final Logger logger = getLogger(IPRulesFlowHandler.class);
-    private static final String BUNDLE = "resources.ip-filter";
 
     @Autowired
     private transient JCRTemplate jcrTemplate;
@@ -62,7 +61,7 @@ public class IPRulesFlowHandler implements Serializable {
             final String type = model.getToBeCreated().getType();
             final MessageResolver itemAlreadyExistsMessage = model.getMessage("toBeCreated.name", "ipFilter.form.error.name.format");
             try {
-                MessageResolver creationResult = jcrTemplate.doExecuteWithSystemSession(null, Constants.EDIT_WORKSPACE,
+                MessageResolver creationResult = jcrTemplate.doExecuteWithSystemSession(
                         new JCRCallback<MessageResolver>() {
                             @Override
                             public MessageResolver doInJCR(JCRSessionWrapper session) throws RepositoryException {
@@ -151,10 +150,10 @@ public class IPRulesFlowHandler implements Serializable {
         try {
             final IPRule ipRule = model.getToBeUpdated();
             if (logger.isDebugEnabled()) {
-                logger.debug("Update Index : " + model.getRuleIndex());
+                logger.debug("Update Index : {}", model.getRuleIndex());
             }
             //Update Rule node in JCR
-            MessageResolver updateResult = jcrTemplate.doExecuteWithSystemSession(null, Constants.EDIT_WORKSPACE,
+            MessageResolver updateResult = jcrTemplate.doExecuteWithSystemSession(
                     new JCRCallback<MessageResolver>() {
                         @Override
                         public MessageResolver doInJCR(JCRSessionWrapper session) throws RepositoryException {
@@ -164,7 +163,7 @@ public class IPRulesFlowHandler implements Serializable {
                             ipRuleNode.setProperty("j:ipMask", ipRule.getIpMask());
                             ipRuleNode.setProperty("j:active", ipRule.isActive());
                             if (logger.isDebugEnabled()) {
-                                logger.debug("IPRulesFlowHandler - updateRules - Updating the IPRule node : " + ipRule.getId());
+                                logger.debug("IPRulesFlowHandler - updateRules - Updating the IPRule node : {}", ipRule.getId());
                             }
                             session.save();
                             //Reload the filter after JCR Update
@@ -202,14 +201,14 @@ public class IPRulesFlowHandler implements Serializable {
         final IPRule ipRuletoRemove = model.getIpRuleList().get(model.getRuleIndex());
         //Delete JCR Node
         try {
-            MessageResolver deleteResult = jcrTemplate.doExecuteWithSystemSession(null, Constants.EDIT_WORKSPACE,
+            MessageResolver deleteResult = jcrTemplate.doExecuteWithSystemSession(
                     new JCRCallback<MessageResolver>() {
                         @Override
                         public MessageResolver doInJCR(JCRSessionWrapper session) throws RepositoryException {
                             JCRNodeWrapper ipRuleNode = session.getNodeByIdentifier(ipRuletoRemove.getId());
                             JCRNodeWrapper siteFolder = ipRuleNode.getParent();
                             if (logger.isDebugEnabled()) {
-                                logger.debug("IPRulesFlowHandler - deleteRules - Deleting the IPRule node : " + ipRuletoRemove.getId());
+                                logger.debug("IPRulesFlowHandler - deleteRules - Deleting the IPRule node : {}", ipRuletoRemove.getId());
                             }
                             ipRuleNode.remove();
                             if (siteFolder.getNodes().getSize() == 0) {
@@ -275,8 +274,8 @@ public class IPRulesFlowHandler implements Serializable {
                                 if (filterFolder.hasProperty("j:filterPhilosophy")) {
                                     ipRulesModel.addSitePhilosophy(filterFolder.getName(), filterFolder.getProperty("j:filterPhilosophy").getString());
                                 }
-                                for (JCRNodeWrapper filter : filterFolder.getNodes()) {
-                                    ipRulesModel.addRule(new IPRule(filter.getProperty("j:description").getString(), filter.getIdentifier(), filter.getProperty("j:ipMask").getString(), filter.getProperty("j:name").getString(), filterFolder.getName(), filter.getProperty("j:active").getBoolean(), filter.getProperty("j:type").getString()));
+                                for (JCRNodeWrapper ipfilter : filterFolder.getNodes()) {
+                                    ipRulesModel.addRule(new IPRule(ipfilter.getProperty("j:description").getString(), ipfilter.getIdentifier(), ipfilter.getProperty("j:ipMask").getString(), ipfilter.getProperty("j:name").getString(), filterFolder.getName(), ipfilter.getProperty("j:active").getBoolean(), ipfilter.getProperty("j:type").getString()));
                                     Collections.sort(ipRulesModel.getIpRuleList(), new CustomIpRuleComparator());
                                 }
                                 session.save();

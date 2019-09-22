@@ -2,7 +2,6 @@ package org.jahia.modules.IPFilter.filter;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.net.util.SubnetUtils;
-import org.jahia.api.Constants;
 import org.jahia.exceptions.JahiaForbiddenAccessException;
 import org.jahia.modules.IPFilter.IPRule;
 import org.jahia.services.content.JCRCallback;
@@ -38,11 +37,9 @@ public class IPFilter extends AbstractFilter implements InitializingBean {
 
     private JCRTemplate jcrTemplate;
 
-    private Map<String, String> sitesPhilosophy = new HashMap<String, String>();
+    private Map<String, String> sitesPhilosophy = new HashMap<>();
 
     private Map<String, List<IPRule>> rules;
-
-    private String filteringRule = "";
 
     private ReadWriteLock filterLock = new ReentrantReadWriteLock();
 
@@ -91,12 +88,12 @@ public class IPFilter extends AbstractFilter implements InitializingBean {
         try {
             if (jcrTemplate != null) {
                 try {
-                    rules = jcrTemplate.doExecuteWithSystemSession(null, Constants.EDIT_WORKSPACE,
+                    rules = jcrTemplate.doExecuteWithSystemSession(
                             new JCRCallback<Map<String, List<IPRule>>>() {
                                 @Override
                                 public Map<String, List<IPRule>> doInJCR(JCRSessionWrapper session) throws RepositoryException {
                                     JCRNodeWrapper filtersFolder;
-                                    Map<String, List<IPRule>> newRules = new HashMap<String, List<IPRule>>();
+                                    Map<String, List<IPRule>> newRules = new HashMap<>();
                                     try {
                                         //Getting the filter folder node
                                         filtersFolder = session.getNode("/settings/ip-filters");
@@ -138,6 +135,7 @@ public class IPFilter extends AbstractFilter implements InitializingBean {
      * @return Content to stop the chain, or null to continue
      * @throws Exception
      */
+    @Override
     public String prepare(RenderContext renderContext, Resource resource, RenderChain chain) throws Exception {
         if (!renderContext.getUser().isRoot()) {
             filterLock.readLock().lock();
@@ -155,7 +153,7 @@ public class IPFilter extends AbstractFilter implements InitializingBean {
 
                 JCRNodeWrapper siteNode = renderContext.getSite();
 
-                List<IPRule> rulesToApply = new ArrayList<IPRule>();
+                List<IPRule> rulesToApply = new ArrayList<>();
                 //Initializing the ip rule list for this site
                 if (rules.containsKey("all")) {
                     rulesToApply.addAll(rules.get("all"));
@@ -167,29 +165,29 @@ public class IPFilter extends AbstractFilter implements InitializingBean {
                 for (IPRule rule : rulesToApply) {//browsing the rule list
                     String filterType = sitesPhilosophy.get(rule.getSiteName());
                     if (logger.isDebugEnabled()) {
-                        logger.debug("- IPFilter - prepare - Site : " + siteNode.getName());
-                        logger.debug("- IPFilter - prepare - current Address : " + currentAddress);
-                        logger.debug("- IPFilter - prepare - rules size : " + rules.size());
-                        logger.debug("- IPFilter - prepare - site philosophy : " + sitesPhilosophy.get(siteNode.getName()));
-                        logger.debug("- IPFilter - prepare - filter Type : " + filterType);
+                        logger.debug("- IPFilter - prepare - Site : {}", siteNode.getName());
+                        logger.debug("- IPFilter - prepare - current Address : {}", currentAddress);
+                        logger.debug("- IPFilter - prepare - rules size : {}", rules.size());
+                        logger.debug("- IPFilter - prepare - site philosophy : {}", sitesPhilosophy.get(siteNode.getName()));
+                        logger.debug("- IPFilter - prepare - filter Type : {}", filterType);
                     }
                     if (logger.isDebugEnabled()) {
-                        logger.debug("filterType is [" + filterType + "]");
+                        logger.debug("filterType is [{}]", filterType);
                     }
                     if ("deny".equals(filterType)) {
 
-                        filteringRule = rule.getIpMask();
+                        String filteringRule = rule.getIpMask();
                         inRange = inRange || isInRange(currentAddress, rule);
                         if (inRange) {
-                            logger.warn("IPFilter - prepare - Deny rule: IP [" + currentAddress + "] is in subnet [" + filteringRule + "]");
+                            logger.warn("IPFilter - prepare - Deny rule: IP [{}] is in subnet [{}]", currentAddress, filteringRule);
                             throw new JahiaForbiddenAccessException();
                         }
                     } else {// onlyallow
-                        filteringRule = rule.getIpMask();
+                        String filteringRule = rule.getIpMask();
                         inRange = inRange || isInRange(currentAddress, rule);
 
                         if (!inRange) {
-                            logger.warn("IPFilter - prepare - Only Allow rule:  IP [" + currentAddress + "] not in subnet [" + filteringRule + "]");
+                            logger.warn("IPFilter - prepare - Only Allow rule:  IP [{}] not in subnet [{}]", currentAddress, filteringRule);
                             throw new JahiaForbiddenAccessException();
                         }
                     }
@@ -224,7 +222,7 @@ public class IPFilter extends AbstractFilter implements InitializingBean {
                         return true;
                     }
                 } catch (IllegalArgumentException iae) {
-                    logger.error("Could not parse [" + subnetCidr + "]. Please use as CIDR-notation.");
+                    logger.error("Could not parse [{}]. Please use as CIDR-notation.", subnetCidr);
                 }
             }
         }

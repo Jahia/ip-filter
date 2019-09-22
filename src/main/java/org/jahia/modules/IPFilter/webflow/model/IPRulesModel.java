@@ -39,8 +39,8 @@ public class IPRulesModel implements Serializable {
     public IPRulesModel() {
         toBeCreated = new IPRule();
         toBeUpdated = new IPRule();
-        sitesPhilosophy = new HashMap<String, String>();
-        ipRuleList = new ArrayList<IPRule>();
+        sitesPhilosophy = new HashMap<>();
+        ipRuleList = new ArrayList<>();
         selectedSite = "all";
     }
 

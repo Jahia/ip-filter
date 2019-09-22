@@ -125,9 +125,7 @@ public class IPRule implements Serializable {
 
         IPRule ipRule = (IPRule) o;
 
-        if (!id.equals(ipRule.id)) return false;
-
-        return true;
+        return id.equals(ipRule.id);
     }
 
     @Override
