@@ -27,7 +27,8 @@ The rules are only applied to sites and not for administration urls and also doe
 
 The module displays a rule creation form.
 
-###Form Fields Table
+## Form Fields Table
+
 | Field                       | Form Input                  |
 | :-------------------------- | --------------------------- |
 | `Name`                        | Opened text input (Be careful this name will be user as Jahia JCR nodename) |
