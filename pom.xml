@@ -70,7 +70,10 @@
         please contact the sales department at sales@jahia.com.
 
 -->
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0                       http://maven.apache.org/xsd/maven-4.0.0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="http://maven.apache.org/POM/4.0.0
+                      http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
     <parent>
         <artifactId>jahia-modules</artifactId>
@@ -80,7 +83,7 @@
     <groupId>org.jahia.modules</groupId>
     <artifactId>ip-filter</artifactId>
     <name>Ip filter</name>
-    <version>1.0</version>    
+    <version>1.0-SNAPSHOT</version>    
     <packaging>bundle</packaging>
     <description>This is the custom module (Ip filter) for running on a Jahia server.</description>
 
@@ -88,8 +91,7 @@
         <connection>scm:git:git@github.com:Jahia/ip-filter.git</connection>
         <developerConnection>scm:git:git@github.com:Jahia/ip-filter.git</developerConnection>
         <url>https://github.com/jahia/ip-filter</url>
-      <tag>ip-filter-1.0</tag>
-  </scm>
+    </scm>
 
     <repositories>
         <repository>
