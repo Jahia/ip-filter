@@ -1,11 +1,10 @@
 # I.P Filter
-=========
+===========
 
 ## Overview
 The Jahia I.P Filter module provide a user-friendly interface to manage I.P filtering on Jahia sites.
 It is accessible from the configuration section in Jahia server settings.
-Using this module any user with the `adminIpFilterSettings` permission will be able to restrain the Jahia sites to defined I.P or I.P range. 
-The rules are only applied to sites and not for administration urls and also does not restrain root user access.
+Using this module any user with the `adminIpFilterSettings` permission will be able to restrain the Jahia sites to defined I.P or I.P range.<br/>The rules are only applied to sites and not for administration urls and also does not restrain root user access.
 
 ---
 ## Goals
@@ -48,13 +47,12 @@ It means that the concerned site will allow all I.Ps except the ones defined as 
 
 ---
 ## I.P mask definition
-###Single I.P
-To define a single I.P, multiple syntaxes are allowed :
-I.P syntax, just the I.P. Example : 192.168.0.1
-I.P subnet bits syntax, the I.P with its bitMask. Example : 192.168.0.1/32
-###I.P range
-I.P subnet bits syntax, the I.P with its bitMask. Example : 192.168.0.1/29 for the range 192.168.0.1 - 192.168.0.6
-You can use this tool to calculate the I.P range subnet mask : http://www.subnet-calculator.com/
+### Single I.P
+To define a single I.P, multiple syntaxes are allowed:
+- I.P syntax, just the I.P. Example : 192.168.0.1
+- I.P subnet bits syntax, the I.P with its bitMask. Example : 192.168.0.1/32
+### I.P range
+I.P subnet bits syntax, the I.P with its bitMask<br/>Example : 192.168.0.1/29 for the range 192.168.0.1 - 192.168.0.6.<br/>You can use this tool to calculate the I.P range subnet mask : http://www.subnet-calculator.com/
 
 ---
 
